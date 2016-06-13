@@ -65,7 +65,7 @@ public class HomeActivity extends AppCompatActivity
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
 
         for (int i = 0; i < 10; i++) {
-            adapter.addFrag(MainContentFragment.newInstance(i), "TAB " + (i + 1));
+            adapter.addFrag(MainContentFragment.newInstance(i), "Latest " + (i + 1));
         }
         viewPager.setAdapter(adapter);
     }
