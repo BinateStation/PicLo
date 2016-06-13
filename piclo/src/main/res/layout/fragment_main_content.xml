@@ -1,0 +1,9 @@
+<rkr.binatestation.piclo.utils.AutoFitRecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/FMC_mainContentRecyclerView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:columnWidth="200dp"
+    android:padding="8dp"
+    tools:context="rkr.binatestation.piclo.fragments.MainContentFragment" />
