@@ -18,6 +18,7 @@ import android.view.View;
 import rkr.binatestation.piclo.R;
 import rkr.binatestation.piclo.adapters.ViewPagerAdapter;
 import rkr.binatestation.piclo.fragments.MainContentFragment;
+import rkr.binatestation.piclo.models.Categories;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -63,11 +64,17 @@ public class HomeActivity extends AppCompatActivity
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-
-        for (int i = 0; i < 10; i++) {
-            adapter.addFrag(MainContentFragment.newInstance(i), "TAB " + (i + 1));
+        Categories categoriesDB = new Categories(getActivity());
+        categoriesDB.open();
+        for (Categories categories : categoriesDB.getAllRows()) {
+            adapter.addFrag(MainContentFragment.newInstance(categories.getCategoryId()), categories.getCategoryName());
         }
+        categoriesDB.close();
         viewPager.setAdapter(adapter);
+    }
+
+    private AppCompatActivity getActivity() {
+        return HomeActivity.this;
     }
 
     @Override

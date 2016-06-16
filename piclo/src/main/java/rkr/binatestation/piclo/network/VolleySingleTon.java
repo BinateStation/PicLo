@@ -22,17 +22,13 @@ public class VolleySingleTon {
      * assignment of domain urls
      * the variable isLocal define if the project work in local domain or in live server domains
      */
-    private static final String domainUrl = "http://yourdevelopmentupdate.co.uk/bookaroo/androidapi/";
-    private static final String domainUrlPayment = "http://yourdevelopmentupdate.co.uk/bookaroo/paymentapi/";
-    private static final String domainUrlForImage = "http://yourdevelopmentupdate.co.uk/bookaroo/frontend/web/uploads/";
-    private static final String domainUrlForShareLink = "http://yourdevelopmentupdate.co.uk";
+    private static final String domainUrl = "";
+    private static final String domainUrlForImage = "";
 
-    private static final String localDomainUrl = "http://192.168.2.200/bookaroo/androidapi/";
-    private static final String localDomainUrlPayment = "http://192.168.2.200/bookaroo/paymentapi/";
-    private static final String localDomainUrlForImage = "http://192.168.2.200/bookaroo/frontend/web/uploads/";
-    private static final String localDomainUrlShareLink = "http://192.168.2.200";
+    private static final String localDomainUrl = "http://binatestation.com/piclo/app/";
+    private static final String localDomainUrlForImage = "http://binatestation.com/piclo/images/gallery/";
 
-    private static Boolean isLocal = false;
+    private static Boolean isLive = false;
     /**
      * static variable for maintain single Volley queue
      */
@@ -77,10 +73,10 @@ public class VolleySingleTon {
      */
 
     public static String getDomainUrlForImage() {
-        if (isLocal) {
-            return localDomainUrlForImage;
-        } else {
+        if (isLive) {
             return domainUrlForImage;
+        } else {
+            return localDomainUrlForImage;
         }
     }
 
@@ -88,33 +84,10 @@ public class VolleySingleTon {
      * static method used to get the domain url for APIs
      */
     public static String getDomainUrl() {
-        if (isLocal) {
-            return localDomainUrl;
-        } else {
+        if (isLive) {
             return domainUrl;
-        }
-    }
-
-    /**
-     * static method used to get the domain url for APIs
-     */
-    public static String getDomainUrlPayment() {
-        if (isLocal) {
-            return localDomainUrlPayment;
         } else {
-            return domainUrlPayment;
-        }
-    }
-
-    /**
-     * static method used to get the domain url for the share page
-     */
-
-    public static String getDomainUrlForShareLink() {
-        if (isLocal) {
-            return localDomainUrlShareLink;
-        } else {
-            return domainUrlForShareLink;
+            return localDomainUrl;
         }
     }
 

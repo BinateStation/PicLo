@@ -417,7 +417,7 @@ public class UploadPicture extends AppCompatActivity {
 
     private void uploadUserDetailsWithOutFile() {
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
-                VolleySingleTon.getDomainUrl() + Constants.SIGN_UP_DETAILS, new Response.Listener<String>() {
+                VolleySingleTon.getDomainUrl() + Constants.CATEGORIES, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 showProgressDialog(false);
@@ -471,7 +471,7 @@ public class UploadPicture extends AppCompatActivity {
         if (selectedImagePath != null) {
             File file = new File(selectedImagePath);
             if (file.exists()) {
-                MultipartUploadRequest request = new MultipartUploadRequest(context, file.getName(), VolleySingleTon.getDomainUrl() + Constants.SIGN_UP_DETAILS);
+                MultipartUploadRequest request = new MultipartUploadRequest(context, file.getName(), VolleySingleTon.getDomainUrl() + Constants.CATEGORIES);
                 request.addFileToUpload(selectedImagePath, "user_image", file.getName(), ContentType.IMAGE_JPEG);
                 request.addParameter("user_id", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, ""));
                 request.addParameter("email", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_EMAIL, ""));
