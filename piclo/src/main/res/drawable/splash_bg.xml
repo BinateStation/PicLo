@@ -3,9 +3,7 @@
     <item>
         <color android:color="@color/icons" />
     </item>
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/ic_splash" />
-    </item>
+    <item
+        android:drawable="@drawable/ic_piclo_24dp"
+        android:gravity="center" />
 </layer-list>

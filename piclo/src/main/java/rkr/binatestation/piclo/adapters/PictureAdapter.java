@@ -4,7 +4,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.android.volley.toolbox.NetworkImageView;
 
@@ -57,6 +59,21 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         holder.title.setText(getItem(position).getTitle());
         holder.courtesy.setText(getItem(position).getCourtesy());
         holder.uploadedBy.setText(getItem(position).getFullName());
+        if (holder.like.isChecked()) {
+            holder.likeCount.setAlpha(1);
+        } else {
+            holder.likeCount.setAlpha(0.4f);
+        }
+        holder.like.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    holder.likeCount.setAlpha(1);
+                } else {
+                    holder.likeCount.setAlpha(0.4f);
+                }
+            }
+        });
     }
 
     @Override
@@ -71,7 +88,8 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
     class ItemHolder extends RecyclerView.ViewHolder {
         View view;
         NetworkImageView picture;
-        TextView title, courtesy, uploadedBy;
+        TextView title, courtesy, uploadedBy, likeCount;
+        ToggleButton like;
 
         /**
          * Constructor to initialize the child views of the view holder
@@ -83,6 +101,8 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
             title = (TextView) itemView.findViewById(R.id.PI_title);
             courtesy = (TextView) itemView.findViewById(R.id.PI_courtesy);
             uploadedBy = (TextView) itemView.findViewById(R.id.PI_uploadedBy);
+            like = (ToggleButton) itemView.findViewById(R.id.PI_like);
+            likeCount = (TextView) itemView.findViewById(R.id.PI_likeCount);
         }
     }
 }
