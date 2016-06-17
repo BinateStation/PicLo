@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
 
@@ -50,14 +51,17 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
     @Override
     public void onBindViewHolder(final ItemHolder holder, int position) {
         holder.picture.setImageUrl(
-                "https://s-media-cache-ak0.pinimg.com/736x/b6/a9/ca/b6a9cad04bbe8f17a669c9beabc1e63d.jpg",
+                VolleySingleTon.getDomainUrlForImage() + getItem(position).getFile(),
                 VolleySingleTon.getInstance(holder.picture.getContext()).getImageLoader()
         );
+        holder.title.setText(getItem(position).getTitle());
+        holder.courtesy.setText(getItem(position).getCourtesy());
+        holder.uploadedBy.setText(getItem(position).getFullName());
     }
 
     @Override
     public int getItemCount() {
-        return 2;//pictureModelList.size();
+        return pictureModelList.size();
     }
 
 
@@ -67,6 +71,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
     class ItemHolder extends RecyclerView.ViewHolder {
         View view;
         NetworkImageView picture;
+        TextView title, courtesy, uploadedBy;
 
         /**
          * Constructor to initialize the child views of the view holder
@@ -75,6 +80,9 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
             super(itemView);
             view = itemView;
             picture = (NetworkImageView) itemView.findViewById(R.id.PI_image);
+            title = (TextView) itemView.findViewById(R.id.PI_title);
+            courtesy = (TextView) itemView.findViewById(R.id.PI_courtesy);
+            uploadedBy = (TextView) itemView.findViewById(R.id.PI_uploadedBy);
         }
     }
 }

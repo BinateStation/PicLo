@@ -1,11 +1,14 @@
 package rkr.binatestation.piclo.utils;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
 import android.text.format.DateFormat;
 
 import java.io.File;
@@ -123,5 +126,21 @@ public class Util {
         }
     }
 
+
+    public static void alert(final Activity context, String title, String message, final Boolean isBack) {
+        new AlertDialog.Builder(context)
+                .setTitle(title)
+                .setMessage(message)
+                .setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        if (isBack) {
+                            context.onBackPressed();
+                        }
+                    }
+                })
+                .show();
+    }
 
 }

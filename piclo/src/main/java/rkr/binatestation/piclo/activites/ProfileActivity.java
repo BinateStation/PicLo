@@ -82,7 +82,7 @@ public class ProfileActivity extends AppCompatActivity {
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFrag(MyProfile.newInstance(), "My Profile");
-        adapter.addFrag(MainContentFragment.newInstance(10), "My Uploads");
+        adapter.addFrag(MainContentFragment.newInstance("7"), "My Uploads");
         viewPager.setAdapter(adapter);
     }
 
