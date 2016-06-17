@@ -35,7 +35,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
     /**
      * Method to set the pictureModelList
      *
-     * @param pictureModelList list of bids
+     * @param pictureModelList list of images
      */
     public void setPictureModelList(List<PictureModel> pictureModelList) {
         this.pictureModelList = pictureModelList;

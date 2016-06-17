@@ -31,7 +31,7 @@ public class SplashScreen extends AppCompatActivity {
     }
 
     private void navigate() {
-        startActivity(new Intent(SplashScreen.this, HomeActivity.class));
+        startActivity(new Intent(getActivity(), HomeActivity.class));
         finish();
     }
 
@@ -63,14 +63,14 @@ public class SplashScreen extends AppCompatActivity {
                     }
                     navigate();
                 } else {
-                    Util.alert(SplashScreen.this, "Alert", response.optString("message"), true);
+                    Util.alert(getActivity(), "Alert", response.optString("message"), true);
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e(tag, "Error :- " + error.toString());
-                Util.alert(SplashScreen.this, "Network Error", "Please check internet connection.!", true);
+                Util.alert(getActivity(), "Network Error", "Please check internet connection.!", true);
             }
         });
         Log.i(tag, "Request url  :- " + jsonObjectRequest.getUrl());
