@@ -45,7 +45,7 @@ public class SplashScreen extends AppCompatActivity {
             }
 
             private void parseResponse(JSONObject response) {
-                if (response.has("status") && response.optInt("status") == 1) {
+                if (response.has("status") && response.optBoolean("status")) {
                     Log.i(tag, response.optString("message"));
                     JSONArray dataArray = response.optJSONArray("data");
                     if (dataArray != null) {

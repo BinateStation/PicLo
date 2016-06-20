@@ -128,19 +128,23 @@ public class Util {
 
 
     public static void alert(final Activity context, String title, String message, final Boolean isBack) {
-        new AlertDialog.Builder(context)
-                .setTitle(title)
-                .setMessage(message)
-                .setNegativeButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        if (isBack) {
-                            context.onBackPressed();
+        try {
+            new AlertDialog.Builder(context)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            if (isBack) {
+                                context.onBackPressed();
+                            }
                         }
-                    }
-                })
-                .show();
+                    })
+                    .show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

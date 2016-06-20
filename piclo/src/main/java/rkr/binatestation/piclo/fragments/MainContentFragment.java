@@ -3,6 +3,7 @@ package rkr.binatestation.piclo.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,9 +13,10 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -39,6 +41,8 @@ import rkr.binatestation.piclo.utils.Util;
 public class MainContentFragment extends Fragment {
 
     private static final String tag = MainContentFragment.class.getName();
+    SwipeRefreshLayout swipeRefreshLayout;
+    PictureAdapter pictureAdapter;
     private String categoryId;
 
     public MainContentFragment() {
@@ -73,27 +77,42 @@ public class MainContentFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_main_content, container, false);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.FMC_swipeRefresh);
         AutoFitRecyclerView mainContentRecyclerView = (AutoFitRecyclerView) view.findViewById(R.id.FMC_mainContentRecyclerView);
-        PictureAdapter pictureAdapter = null;
         if (mainContentRecyclerView != null) {
             mainContentRecyclerView.setHasFixedSize(true);
             mainContentRecyclerView.setAdapter(pictureAdapter = new PictureAdapter());
         }
-        getPictures(pictureAdapter);
+        if (pictureAdapter != null) {
+            getPictures(pictureAdapter);
+        }
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (pictureAdapter != null) {
+                    getPictures(pictureAdapter);
+                }
+            }
+        });
         return view;
     }
 
     private void getPictures(final PictureAdapter pictureAdapter) {
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
-                VolleySingleTon.getDomainUrl() + Constants.GALLERY, null, new Response.Listener<JSONObject>() {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                VolleySingleTon.getDomainUrl() + Constants.GALLERY, new Response.Listener<String>() {
             @Override
-            public void onResponse(JSONObject response) {
+            public void onResponse(String response) {
                 Log.d(tag, "Response payload :- " + response);
-                parseResponse(response);
+                swipeRefreshLayout.setRefreshing(false);
+                try {
+                    parseResponse(new JSONObject(response));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             private void parseResponse(JSONObject response) {
-                if (response.has("status") && response.optInt("status") == 1) {
+                if (response.has("status") && response.optBoolean("status")) {
                     Log.i(tag, response.optString("message"));
                     JSONArray dataArray = response.optJSONArray("data");
                     if (dataArray != null) {
@@ -116,20 +135,21 @@ public class MainContentFragment extends Fragment {
                         pictureAdapter.notifyDataSetChanged();
                     }
                 } else {
-                    Util.alert(getActivity(), "Alert", response.optString("message"), true);
+                    Util.alert(getActivity(), "Alert", response.optString("message"), false);
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e(tag, "Error :- " + error.toString());
-                Util.alert(getActivity(), "Network Error", "Please check internet connection.!", true);
+                swipeRefreshLayout.setRefreshing(false);
+                Util.alert(getActivity(), "Network Error", "Please check internet connection.!", false);
             }
         }) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("categoryId", categoryId);
+                params.put("category", categoryId);
 
                 Log.d(tag, getUrl() + " : Request payload :- " + params.toString());
                 return params;
@@ -142,8 +162,7 @@ public class MainContentFragment extends Fragment {
                 return params;
             }
         };
-        Log.i(tag, "Request url  :- " + jsonObjectRequest.getUrl());
-        VolleySingleTon.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
+        Log.i(tag, "Request url  :- " + stringRequest.getUrl());
+        VolleySingleTon.getInstance(getActivity()).addToRequestQueue(stringRequest);
     }
-
 }
