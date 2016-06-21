@@ -423,9 +423,9 @@ public class UploadPicture extends AppCompatActivity {
                 showProgressDialog(false);
                 Log.d(tag, "Response payload :- " + response);
                 try {
-                    alert("Success", "Successfully Updated.");
+                    Util.alert(getContext(), "Success", "Successfully Updated.", false);
                 } catch (Exception e) {
-                    alert("Alert", "Something went wrong, please try again later!");
+                    Util.alert(getContext(), "Alert", "Something went wrong, please try again later!", false);
                     e.printStackTrace();
                 }
             }
@@ -435,11 +435,11 @@ public class UploadPicture extends AppCompatActivity {
                 showProgressDialog(false);
                 Log.d(tag, "Error :- " + error.toString());
                 if (error.toString().contains("NoConnectionError")) {
-                    alert("Network Alert", "Please check Internet Connection");
+                    Util.alert(getContext(), "Network Alert", "Please check Internet Connection", false);
                 } else if (error.toString().contains("TimeoutError")) {
-                    alert("Network Alert", "Please check Internet Connection");
+                    Util.alert(getContext(), "Network Alert", "Please check Internet Connection", false);
                 } else {
-                    alert("Alert", "Something went wrong, please try again later!");
+                    Util.alert(getContext(), "Alert", "Something went wrong, please try again later!", false);
                 }
             }
         }) {
@@ -502,19 +502,6 @@ public class UploadPicture extends AppCompatActivity {
         } else {
             uploadUserDetailsWithOutFile();
         }
-    }
-
-    private void alert(String title, String message) {
-        new AlertDialog.Builder(getContext())
-                .setTitle(title)
-                .setMessage(message)
-                .setNegativeButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                })
-                .show();
     }
 
     @Override

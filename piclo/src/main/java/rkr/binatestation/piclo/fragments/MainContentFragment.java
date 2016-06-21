@@ -162,7 +162,6 @@ public class MainContentFragment extends Fragment {
                 return params;
             }
         };
-        Log.i(tag, "Request url  :- " + stringRequest.getUrl());
         VolleySingleTon.getInstance(getActivity()).addToRequestQueue(stringRequest);
     }
 }

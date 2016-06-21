@@ -1,5 +1,6 @@
 package rkr.binatestation.piclo.activites;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -9,19 +10,23 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import rkr.binatestation.piclo.R;
 import rkr.binatestation.piclo.adapters.ViewPagerAdapter;
 import rkr.binatestation.piclo.fragments.MainContentFragment;
 import rkr.binatestation.piclo.models.Categories;
+import rkr.binatestation.piclo.utils.Constants;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    View header;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +40,11 @@ public class HomeActivity extends AppCompatActivity
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    startActivity(new Intent(getBaseContext(), UploadPicture.class));
+                    if (getSharedPreferences(getPackageName(), MODE_PRIVATE).getBoolean(Constants.KEY_IS_LOGGED_IN, false)) {
+                        startActivity(new Intent(getBaseContext(), UploadPicture.class));
+                    } else {
+                        alertForLoggingIn();
+                    }
                 }
             });
         }
@@ -51,6 +60,8 @@ public class HomeActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(this);
+            header = navigationView.getHeaderView(0);
+            setNavigationHeader();
         }
 
         ViewPager mViewPager = (ViewPager) findViewById(R.id.CH_homeViewPager);
@@ -60,11 +71,43 @@ public class HomeActivity extends AppCompatActivity
         assert tabLayout != null;
         tabLayout.setupWithViewPager(mViewPager);
 
+
+    }
+
+    private void setNavigationHeader() {
+        TextView userName = (TextView) header.findViewById(R.id.NHH_userName);
+        TextView email = (TextView) header.findViewById(R.id.NHH_userEmail);
+        if (header != null && getSharedPreferences(getPackageName(), MODE_PRIVATE).getBoolean(Constants.KEY_IS_LOGGED_IN, false)) {
+            userName.setText(getSharedPreferences(getPackageName(), MODE_PRIVATE).getString(Constants.KEY_USER_FULL_NAME, "PicLo"));
+            email.setText(getSharedPreferences(getPackageName(), MODE_PRIVATE).getString(Constants.KEY_USER_EMAIL, ""));
+        } else {
+            userName.setText(R.string.app_name);
+            email.setText("");
+        }
+    }
+
+    private void alertForLoggingIn() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Alert")
+                .setMessage("Need sign in to proceed...!")
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        startActivity(new Intent(getBaseContext(), LoginActivity.class));
+                    }
+                })
+                .show();
     }
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        Categories categoriesDB = new Categories(getActivity());
+        Categories categoriesDB = new Categories(getContext());
         categoriesDB.open();
         for (Categories categories : categoriesDB.getAllRows()) {
             adapter.addFrag(MainContentFragment.newInstance(categories.getCategoryId()), categories.getCategoryName());
@@ -73,7 +116,7 @@ public class HomeActivity extends AppCompatActivity
         viewPager.setAdapter(adapter);
     }
 
-    private AppCompatActivity getActivity() {
+    private HomeActivity getContext() {
         return HomeActivity.this;
     }
 
@@ -92,7 +135,20 @@ public class HomeActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.home, menu);
+        if (getSharedPreferences(getPackageName(), MODE_PRIVATE).getBoolean(Constants.KEY_IS_LOGGED_IN, false)) {
+            menu.getItem(0).setTitle("Logout");
+            setNavigationHeader();
+        } else {
+            menu.getItem(0).setTitle("Login");
+            setNavigationHeader();
+        }
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -102,7 +158,14 @@ public class HomeActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_login_logout) {
-            startActivity(new Intent(getBaseContext(), LoginActivity.class));
+            if (item.getTitle().equals("Logout")) {
+                item.setTitle("Login");
+                getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
+                        .putBoolean(Constants.KEY_IS_LOGGED_IN, false).apply();
+                setNavigationHeader();
+            } else {
+                startActivity(new Intent(getBaseContext(), LoginActivity.class));
+            }
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -115,10 +178,18 @@ public class HomeActivity extends AppCompatActivity
 
         switch (item.getItemId()) {
             case R.id.nav_upload:
-                startActivity(new Intent(getBaseContext(), UploadPicture.class));
+                if (getSharedPreferences(getPackageName(), MODE_PRIVATE).getBoolean(Constants.KEY_IS_LOGGED_IN, false)) {
+                    startActivity(new Intent(getBaseContext(), UploadPicture.class));
+                } else {
+                    alertForLoggingIn();
+                }
                 break;
             case R.id.nav_profile:
-                startActivity(new Intent(getBaseContext(), ProfileActivity.class));
+                if (getSharedPreferences(getPackageName(), MODE_PRIVATE).getBoolean(Constants.KEY_IS_LOGGED_IN, false)) {
+                    startActivity(new Intent(getBaseContext(), ProfileActivity.class));
+                } else {
+                    alertForLoggingIn();
+                }
                 break;
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

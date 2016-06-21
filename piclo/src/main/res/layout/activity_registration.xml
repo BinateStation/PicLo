@@ -38,6 +38,7 @@
                 android:layout_height="wrap_content">
 
                 <android.support.design.widget.TextInputEditText
+                    android:id="@+id/AR_username"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/username"
@@ -49,6 +50,7 @@
                 android:layout_height="wrap_content">
 
                 <android.support.design.widget.TextInputEditText
+                    android:id="@+id/AR_fullName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/full_name"
@@ -60,6 +62,7 @@
                 android:layout_height="wrap_content">
 
                 <android.support.design.widget.TextInputEditText
+                    android:id="@+id/AR_email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/email"
@@ -71,6 +74,7 @@
                 android:layout_height="wrap_content">
 
                 <android.support.design.widget.TextInputEditText
+                    android:id="@+id/AR_phone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/phone"
@@ -82,6 +86,7 @@
                 android:layout_height="wrap_content">
 
                 <android.support.design.widget.TextInputEditText
+                    android:id="@+id/AR_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/password"
@@ -94,6 +99,7 @@
                 android:layout_marginBottom="30dp">
 
                 <android.support.design.widget.TextInputEditText
+                    android:id="@+id/AR_confirmPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/confirm_password"
@@ -104,7 +110,7 @@
     </android.support.v4.widget.NestedScrollView>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/AR_register"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"

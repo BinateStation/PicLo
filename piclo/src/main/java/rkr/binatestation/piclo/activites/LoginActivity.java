@@ -10,7 +10,6 @@ import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -20,6 +19,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,10 +30,24 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import rkr.binatestation.piclo.R;
+import rkr.binatestation.piclo.network.VolleySingleTon;
+import rkr.binatestation.piclo.utils.Constants;
+import rkr.binatestation.piclo.utils.Util;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -42,15 +56,11 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
+    private static final String tag = LoginActivity.class.getName();
     /**
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
-
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -165,10 +175,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
-
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -181,7 +187,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (TextUtils.isEmpty(password) || !isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -192,7 +198,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
+        } else if (!Util.isValidEmail(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
@@ -206,18 +212,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            signIn(email, password);
         }
     }
 
-    private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
-    }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() > 4;
     }
 
@@ -300,6 +300,70 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailView.setAdapter(adapter);
     }
 
+    private void signIn(final String username, final String password) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                VolleySingleTon.getDomainUrl() + Constants.LOGIN, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(tag, "Response payload :- " + response);
+                showProgress(false);
+                try {
+                    parseResponse(new JSONObject(response));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            private void parseResponse(JSONObject response) {
+                if (response.has("status") && response.optBoolean("status")) {
+                    Log.i(tag, response.optString("message"));
+                    JSONObject data = response.optJSONObject("data");
+                    if (data != null) {
+                        getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
+                                .putString(Constants.KEY_USER_ID, data.optString("userId"))
+                                .putString(Constants.KEY_USER_FULL_NAME, data.optString("fullName"))
+                                .putString(Constants.KEY_USER_EMAIL, data.optString("email"))
+                                .putString(Constants.KEY_MOBILE, data.optString("mobile"))
+                                .putString(Constants.KEY_USER_NAME, data.optString("userName"))
+                                .putBoolean(Constants.KEY_IS_LOGGED_IN, true)
+                                .apply();
+                        onBackPressed();
+                    }
+                } else {
+                    Util.alert(getContext(), "Alert", response.optString("message"), false);
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(tag, "Error :- " + error.toString());
+                showProgress(false);
+                Util.alert(getContext(), "Network Error", "Please check internet connection.!", false);
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("userName", username);
+                params.put("password", password);
+
+                Log.d(tag, getUrl() + " : Request payload :- " + params.toString());
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+        VolleySingleTon.getInstance(getContext()).addToRequestQueue(stringRequest);
+    }
+
+    private LoginActivity getContext() {
+        return LoginActivity.this;
+    }
 
     private interface ProfileQuery {
         String[] PROJECTION = {
@@ -309,55 +373,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         int ADDRESS = 0;
         int IS_PRIMARY = 1;
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            // TODO: register the new account here.
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
     }
 }
 
