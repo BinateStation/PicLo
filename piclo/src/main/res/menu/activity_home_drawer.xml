@@ -9,7 +9,7 @@
             android:title="@string/home" />
         <item
             android:id="@+id/nav_upload"
-            android:icon="@drawable/ic_up_arrow_24dp"
+            android:icon="@drawable/ic_upload_24dp"
             android:title="@string/upload" />
         <item
             android:id="@+id/nav_profile"

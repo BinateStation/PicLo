@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_up_arrow_24dp"
+        android:src="@drawable/ic_upload_24dp"
         app:layout_behavior="rkr.binatestation.piclo.utils.FABScrollBehavior" />
 
 </android.support.design.widget.CoordinatorLayout>

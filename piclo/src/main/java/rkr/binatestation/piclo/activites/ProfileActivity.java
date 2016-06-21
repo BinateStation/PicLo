@@ -62,7 +62,7 @@ public class ProfileActivity extends AppCompatActivity {
                     if (tab.getPosition() == 0) {
                         fab.setImageDrawable(ContextCompat.getDrawable(fab.getContext(), R.drawable.ic_create_black_24dp));
                     } else {
-                        fab.setImageDrawable(ContextCompat.getDrawable(fab.getContext(), R.drawable.ic_up_arrow_24dp));
+                        fab.setImageDrawable(ContextCompat.getDrawable(fab.getContext(), R.drawable.ic_upload_24dp));
                     }
                 }
 
