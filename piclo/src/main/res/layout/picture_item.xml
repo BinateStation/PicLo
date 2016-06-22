@@ -22,7 +22,8 @@
                 android:id="@+id/PI_image"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scaleType="centerInside" />
+                android:adjustViewBounds="true"
+                android:scaleType="fitXY" />
 
             <FrameLayout
                 android:layout_width="wrap_content"
