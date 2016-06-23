@@ -64,6 +64,7 @@ public class MyProfile extends Fragment {
                     if (view.isSelected()) {
                         view.setSelected(false);
                         fab.setImageResource(R.drawable.ic_create_black_24dp);
+                        updateUserDetails();
                     } else {
                         view.setSelected(true);
                         fab.setImageResource(R.drawable.ic_save_black_24dp);
