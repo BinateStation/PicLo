@@ -4,6 +4,6 @@
         <color android:color="@color/icons" />
     </item>
     <item
-        android:drawable="@drawable/ic_logo_splash"
+        android:drawable="@drawable/ic_splash_bg"
         android:gravity="center" />
 </layer-list>
