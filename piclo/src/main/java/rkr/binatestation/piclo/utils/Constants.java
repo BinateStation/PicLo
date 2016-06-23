@@ -17,6 +17,9 @@ public final class Constants {
     public static final String GALLERY = "gallery";
     public static final String LOGIN = "login";
     public static final String REGISTER = "register";
+    public static final String GALLERY_UPLOAD = "gallery/upload";
+    public static final String PROFILE = "profile";
+    public static final String UPDATE = "update";
     /**
      ***********************************************************************************************
      */

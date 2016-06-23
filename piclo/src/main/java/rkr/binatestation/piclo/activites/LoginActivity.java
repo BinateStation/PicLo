@@ -121,7 +121,7 @@ public class LoginActivity extends AppCompatActivity {
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (TextUtils.isEmpty(password) || !isPasswordValid(password)) {
+        if (TextUtils.isEmpty(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -130,10 +130,6 @@ public class LoginActivity extends AppCompatActivity {
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
             mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
-            cancel = true;
-        } else if (!Util.isValidEmail(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
         }
@@ -150,10 +146,6 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-
-    private boolean isPasswordValid(String password) {
-        return password.length() > 4;
-    }
 
     /**
      * Shows the progress UI and hides the login form.

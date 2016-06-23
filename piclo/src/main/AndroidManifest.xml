@@ -33,11 +33,7 @@
         <activity
             android:name=".activites.ProfileActivity"
             android:label="@string/profile"
-            android:theme="@style/AppTheme.Light">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activites.HomeActivity" />
-        </activity>
+            android:theme="@style/AppTheme.Light" />
         <activity
             android:name=".activites.RegistrationActivity"
             android:label="@string/registration"

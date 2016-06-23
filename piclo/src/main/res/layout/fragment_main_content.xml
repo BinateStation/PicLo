@@ -1,15 +1,33 @@
-<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/FMC_swipeRefresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="rkr.binatestation.piclo.fragments.MainContentFragment">
 
-    <rkr.binatestation.piclo.utils.AutoFitRecyclerView
-        android:id="@+id/FMC_mainContentRecyclerView"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/FMC_swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:columnWidth="200dp"
-        android:padding="8dp" />
-</android.support.v4.widget.SwipeRefreshLayout>
+        android:layout_height="match_parent">
+
+        <rkr.binatestation.piclo.utils.AutoFitRecyclerView
+            android:id="@+id/FMC_mainContentRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:columnWidth="200dp"
+            android:padding="8dp" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/FMC_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="64dp"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginRight="@dimen/fab_margin"
+        android:src="@drawable/ic_upload_24dp"
+        android:tint="@android:color/white"
+        android:visibility="gone" />
+</android.support.design.widget.CoordinatorLayout>

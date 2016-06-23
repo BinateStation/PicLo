@@ -21,22 +21,23 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
 
 import com.alexbbb.uploadservice.AbstractUploadServiceReceiver;
 import com.alexbbb.uploadservice.ContentType;
 import com.alexbbb.uploadservice.MultipartUploadRequest;
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
 import com.soundcloud.android.crop.Crop;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,10 +48,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
 
 import rkr.binatestation.piclo.R;
+import rkr.binatestation.piclo.models.Categories;
 import rkr.binatestation.piclo.network.VolleySingleTon;
 import rkr.binatestation.piclo.utils.Constants;
 import rkr.binatestation.piclo.utils.Util;
@@ -58,17 +58,24 @@ import rkr.binatestation.piclo.utils.Util;
 public class UploadPicture extends AppCompatActivity {
     private static final String tag = UploadPicture.class.getSimpleName();
     FloatingActionButton upload;
-    TextInputEditText chooseFile;
+    TextInputEditText chooseFile, title, courtesy;
+    Spinner category;
     String selectedImagePath = "";
+    Uri uri;
     ImageView uploadPicture;
     Integer REQUEST_CAMERA = 1;
     Integer SELECT_FILE = 2;
+    ArrayAdapter<Categories> categoriesArrayAdapter;
     private ProgressDialog mProgressDialog;
     private final AbstractUploadServiceReceiver uploadReceiver = new AbstractUploadServiceReceiver() {
 
         @Override
         public void onProgress(String uploadId, int progress) {
             Log.i(tag, "The progress of the upload with ID " + uploadId + " is: " + progress);
+            if (mProgressDialog != null && !mProgressDialog.isShowing()) {
+                showProgressDialog(true, uploadId, "Image Uploading...");
+                mProgressDialog.setProgress(progress);
+            }
         }
 
         @Override
@@ -79,19 +86,37 @@ public class UploadPicture extends AppCompatActivity {
 
         @Override
         public void onError(String uploadId, Exception exception) {
-            showProgressDialog(false);
+            showProgressDialog(false, "", "");
             Log.e(tag, "Error in upload with ID: " + uploadId + ". "
                     + exception.getLocalizedMessage(), exception);
         }
 
         @Override
         public void onCompleted(String uploadId, int serverResponseCode, String serverResponseMessage) {
-            showProgressDialog(false);
+            showProgressDialog(false, "", "");
             Log.i(tag, "Upload with ID " + uploadId
                     + " has been completed with HTTP " + serverResponseCode
                     + ". Response from server: " + serverResponseMessage);
+            try {
+                JSONObject response = new JSONObject(serverResponseMessage);
+                if (response.has("status") && response.optBoolean("status")) {
+                    Log.i(tag, response.optString("message"));
+                    Util.alert(getContext(), "Alert", response.optString("message"), true);
+                } else {
+                    Log.e(tag, response.optString("message"));
+                    Util.alert(getContext(), "Alert", response.optString("message"), false);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     };
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("image_uri", uri);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +127,9 @@ public class UploadPicture extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-        mProgressDialog = new ProgressDialog(getContext());
+        if (savedInstanceState == null || mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(getContext());
+        }
 
         uploadPicture = (ImageView) findViewById(R.id.AUP_uploadPicture);
         uploadPicture.setOnClickListener(new View.OnClickListener() {
@@ -118,7 +145,7 @@ public class UploadPicture extends AppCompatActivity {
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                uploadUserDetailsWithImage(getContext());
+                validateInputs();
             }
         });
 
@@ -143,6 +170,41 @@ public class UploadPicture extends AppCompatActivity {
             }
         });
 
+        title = (TextInputEditText) findViewById(R.id.AUP_title);
+        category = (Spinner) findViewById(R.id.AUP_category);
+        courtesy = (TextInputEditText) findViewById(R.id.AUP_courtesy);
+
+        categoriesArrayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item);
+        categoriesArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        category.setAdapter(categoriesArrayAdapter);
+        setCategory();
+
+        if (savedInstanceState != null) {
+            setImageView((Uri) savedInstanceState.getParcelable("image_uri"));
+        }
+    }
+
+    private void validateInputs() {
+        if (TextUtils.isEmpty(title.getText().toString())) {
+            title.setError("Please provide a title..!");
+            title.requestFocus();
+        } else if (TextUtils.isEmpty(courtesy.getText().toString())) {
+            courtesy.setError("Please specify the courtesy of this image..!");
+            courtesy.requestFocus();
+        } else if (TextUtils.isEmpty(chooseFile.getText().toString())) {
+            chooseFile.setError("Please choose a file to upload..!");
+            chooseFile.requestFocus();
+        } else {
+            uploadImage(getContext());
+        }
+    }
+
+    private void setCategory() {
+        Categories categoriesDB = new Categories(getContext());
+        categoriesDB.open();
+        categoriesArrayAdapter.addAll(categoriesDB.getAllRows());
+        categoriesDB.close();
+        categoriesArrayAdapter.notifyDataSetChanged();
     }
 
     public boolean isStoragePermissionGranted() {
@@ -163,13 +225,22 @@ public class UploadPicture extends AppCompatActivity {
         }
     }
 
-    public void showProgressDialog(Boolean aBoolean) {
+    public void showProgressDialog(Boolean aBoolean, String message, String title) {
         try {
             if (mProgressDialog != null) {
                 if (aBoolean) {
-                    mProgressDialog.setMessage("Please wait ...");
-                    mProgressDialog.setCancelable(false);
-                    mProgressDialog.show();
+                    if (TextUtils.isEmpty(message)) {
+                        mProgressDialog.setMessage("Please wait ...");
+                        mProgressDialog.setCancelable(false);
+                        mProgressDialog.show();
+                    } else {
+                        mProgressDialog.setTitle(title);
+                        mProgressDialog.setMessage(message);
+                        mProgressDialog.setMax(100);
+                        mProgressDialog.setCancelable(false);
+                        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                        mProgressDialog.show();
+                    }
                 } else {
                     if (mProgressDialog.isShowing()) {
                         mProgressDialog.dismiss();
@@ -194,7 +265,6 @@ public class UploadPicture extends AppCompatActivity {
     }
 
     private void selectImage() {
-        selectedImagePath = "";
         final CharSequence[] items = {"Take Photo", "Choose from Library", "Cancel"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Add Photo!");
@@ -217,11 +287,28 @@ public class UploadPicture extends AppCompatActivity {
     }
 
     private void setImageView(Uri result) {
-        uploadPicture.setImageURI(result);
-        File file = new File(result.getPath());
-        chooseFile.setText(file.getName());
-        selectedImagePath = result.getPath();
-        Log.i(tag, selectedImagePath);
+        try {
+            uri = result;
+            uploadPicture.setImageBitmap(getThumbnailFromUri(result));
+            File file = new File(result.getPath());
+            chooseFile.setText(file.getName());
+            selectedImagePath = Util.getRealPathFromURI(getContext(), result);
+            Log.i(tag, selectedImagePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Bitmap getThumbnailFromUri(Uri uri) {
+        try {
+            return MediaStore.Images.Thumbnails.getThumbnail(
+                    getContentResolver(), Util.getOriginIdFromURI(getContext(), uri),
+                    MediaStore.Images.Thumbnails.MINI_KIND,
+                    null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -415,66 +502,17 @@ public class UploadPicture extends AppCompatActivity {
         }.execute(url);
     }
 
-    private void uploadUserDetailsWithOutFile() {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST,
-                VolleySingleTon.getDomainUrl() + Constants.CATEGORIES, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                showProgressDialog(false);
-                Log.d(tag, "Response payload :- " + response);
-                try {
-                    Util.alert(getContext(), "Success", "Successfully Updated.", false);
-                } catch (Exception e) {
-                    Util.alert(getContext(), "Alert", "Something went wrong, please try again later!", false);
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                showProgressDialog(false);
-                Log.d(tag, "Error :- " + error.toString());
-                if (error.toString().contains("NoConnectionError")) {
-                    Util.alert(getContext(), "Network Alert", "Please check Internet Connection", false);
-                } else if (error.toString().contains("TimeoutError")) {
-                    Util.alert(getContext(), "Network Alert", "Please check Internet Connection", false);
-                } else {
-                    Util.alert(getContext(), "Alert", "Something went wrong, please try again later!", false);
-                }
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("user_id", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE)
-                        .getString(Constants.KEY_USER_ID, ""));
-                params.put("user_image", "");
-                params.put("email", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE)
-                        .getString(Constants.KEY_USER_EMAIL, ""));
-
-                Log.i(tag, "Request payload :- " + params.toString());
-                return params;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("Content-Type", "application/x-www-form-urlencoded");
-                return params;
-            }
-        };
-        Log.i(tag, "Request url  :- " + stringRequest.getUrl());
-        VolleySingleTon.getInstance(getContext()).addToRequestQueue(stringRequest);
-    }
-
-    public void uploadUserDetailsWithImage(final Context context) {
+    public void uploadImage(final Context context) {
         if (selectedImagePath != null) {
             File file = new File(selectedImagePath);
             if (file.exists()) {
-                MultipartUploadRequest request = new MultipartUploadRequest(context, file.getName(), VolleySingleTon.getDomainUrl() + Constants.CATEGORIES);
-                request.addFileToUpload(selectedImagePath, "user_image", file.getName(), ContentType.IMAGE_JPEG);
-                request.addParameter("user_id", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, ""));
-                request.addParameter("email", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_EMAIL, ""));
+                showProgressDialog(true, file.getName(), "Image Uploading...");
+                MultipartUploadRequest request = new MultipartUploadRequest(context, file.getName(), VolleySingleTon.getDomainUrl() + Constants.GALLERY_UPLOAD);
+                request.addFileToUpload(selectedImagePath, "file", file.getName(), ContentType.IMAGE_JPEG);
+                request.addParameter("userId", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, ""));
+                request.addParameter("title", title.getText().toString().trim());
+                request.addParameter("courtesy", courtesy.getText().toString().trim());
+                request.addParameter("category", categoriesArrayAdapter.getItem(category.getSelectedItemPosition()).getCategoryId());
 
                 //configure the notification
                 request.setNotificationConfig(R.mipmap.ic_launcher,
@@ -483,6 +521,7 @@ public class UploadPicture extends AppCompatActivity {
                         " Profile update completed successfully",
                         "Profile update Intercepted",
                         true);
+
                 // if you comment the following line, the system default user-agent will be used
                 request.setCustomUserAgent("UploadServiceDemo/1.0");
 
@@ -497,10 +536,12 @@ public class UploadPicture extends AppCompatActivity {
                     exc.printStackTrace();
                 }
             } else {
-                uploadUserDetailsWithOutFile();
+                Util.alert(getContext(), "Alert", "File doesn't exits..!", false);
+                showProgressDialog(false, "", "");
             }
         } else {
-            uploadUserDetailsWithOutFile();
+            Util.alert(getContext(), "Alert", "Please select a file first...!", false);
+            showProgressDialog(false, "", "");
         }
     }
 

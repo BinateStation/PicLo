@@ -1,7 +1,10 @@
 package rkr.binatestation.piclo.fragments;
 
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import rkr.binatestation.piclo.R;
+import rkr.binatestation.piclo.activites.UploadPicture;
 import rkr.binatestation.piclo.adapters.PictureAdapter;
 import rkr.binatestation.piclo.models.PictureModel;
 import rkr.binatestation.piclo.network.VolleySingleTon;
@@ -94,6 +98,21 @@ public class MainContentFragment extends Fragment {
                 }
             }
         });
+        final FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.FMC_upload);
+        if (categoryId.equals("100")) {
+            fab.setVisibility(View.VISIBLE);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (getContext().getSharedPreferences(getContext().getPackageName(), Context.MODE_PRIVATE).getBoolean(Constants.KEY_IS_LOGGED_IN, false)) {
+                        startActivity(new Intent(getContext(), UploadPicture.class));
+                    }
+                }
+            });
+        } else {
+            fab.setVisibility(View.GONE);
+        }
+
         return view;
     }
 

@@ -71,6 +71,11 @@ public class Categories {
         this.categoryName = categoryName;
     }
 
+    @Override
+    public String toString() {
+        return getCategoryName();
+    }
+
     public void open() throws SQLException {
         database = dbHelper.getWritableDatabase();
     }

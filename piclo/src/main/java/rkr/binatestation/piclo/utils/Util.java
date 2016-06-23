@@ -126,6 +126,25 @@ public class Util {
         }
     }
 
+    /**
+     * static method used to get the path from uri
+     */
+    public static Long getOriginIdFromURI(Context context, Uri contentUri) {
+        Cursor cursor = null;
+        try {
+            String[] projection = {MediaStore.Images.Media._ID};
+            cursor = context.getContentResolver().query(contentUri, projection, null, null, null);
+            assert cursor != null;
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+            cursor.moveToFirst();
+            return cursor.getLong(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
 
     public static void alert(final Activity context, String title, String message, final Boolean isBack) {
         try {
