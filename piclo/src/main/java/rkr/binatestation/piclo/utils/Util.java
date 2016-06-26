@@ -8,6 +8,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.text.format.DateFormat;
 
@@ -16,6 +17,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+
+import rkr.binatestation.piclo.fragments.ProgressError;
 
 /**
  * Created by RKR on 27-01-2016.
@@ -161,6 +164,20 @@ public class Util {
                         }
                     })
                     .show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Shows the progress UI and hides the content form.
+     */
+    public static void showProgressOrError(FragmentManager fragmentManager, int contentFormId, int type) {
+        try {
+            fragmentManager.beginTransaction()
+                    .replace(contentFormId, ProgressError.newInstance(type))
+                    .addToBackStack("ProgressError")
+                    .commit();
         } catch (Exception e) {
             e.printStackTrace();
         }

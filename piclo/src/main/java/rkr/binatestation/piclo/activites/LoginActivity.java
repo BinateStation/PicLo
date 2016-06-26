@@ -1,10 +1,6 @@
 package rkr.binatestation.piclo.activites;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
@@ -25,7 +21,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -44,8 +39,6 @@ public class LoginActivity extends AppCompatActivity {
     private static final String tag = LoginActivity.class.getName();
     private TextInputEditText mEmailView;
     private TextInputEditText mPasswordView;
-    private View mProgressView;
-    private View mLoginFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,9 +73,6 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
         }
-
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
     }
 
     public void newUser(View view) {
@@ -141,45 +131,8 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
+            Util.showProgressOrError(getSupportFragmentManager(), R.id.AL_contentLayout, 1);
             signIn(email, password);
-        }
-    }
-
-
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -188,40 +141,48 @@ public class LoginActivity extends AppCompatActivity {
                 VolleySingleTon.getDomainUrl() + Constants.LOGIN, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(tag, "Response payload :- " + response);
-                showProgress(false);
                 try {
+                    Log.d(tag, "Response payload :- " + response);
+                    onBackPressed();
                     parseResponse(new JSONObject(response));
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
             private void parseResponse(JSONObject response) {
-                if (response.has("status") && response.optBoolean("status")) {
-                    Log.i(tag, response.optString("message"));
-                    JSONObject data = response.optJSONObject("data");
-                    if (data != null) {
-                        getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
-                                .putString(Constants.KEY_USER_ID, data.optString("userId"))
-                                .putString(Constants.KEY_USER_FULL_NAME, data.optString("fullName"))
-                                .putString(Constants.KEY_USER_EMAIL, data.optString("email"))
-                                .putString(Constants.KEY_MOBILE, data.optString("mobile"))
-                                .putString(Constants.KEY_USER_NAME, data.optString("userName"))
-                                .putBoolean(Constants.KEY_IS_LOGGED_IN, true)
-                                .apply();
-                        onBackPressed();
+                try {
+                    if (response.has("status") && response.optBoolean("status")) {
+                        Log.i(tag, response.optString("message"));
+                        JSONObject data = response.optJSONObject("data");
+                        if (data != null) {
+                            getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
+                                    .putString(Constants.KEY_USER_ID, data.optString("userId"))
+                                    .putString(Constants.KEY_USER_FULL_NAME, data.optString("fullName"))
+                                    .putString(Constants.KEY_USER_EMAIL, data.optString("email"))
+                                    .putString(Constants.KEY_MOBILE, data.optString("mobile"))
+                                    .putString(Constants.KEY_USER_NAME, data.optString("userName"))
+                                    .putBoolean(Constants.KEY_IS_LOGGED_IN, true)
+                                    .apply();
+                            onBackPressed();
+                        }
+                    } else {
+                        Util.showProgressOrError(getSupportFragmentManager(), R.id.AL_contentLayout, 2);
                     }
-                } else {
-                    Util.alert(getContext(), "Alert", response.optString("message"), false);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(tag, "Error :- " + error.toString());
-                showProgress(false);
-                Util.alert(getContext(), "Network Error", "Please check internet connection.!", false);
+                try {
+                    Log.e(tag, "Error :- " + error.toString());
+                    onBackPressed();
+                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AL_contentLayout, 2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }) {
             @Override

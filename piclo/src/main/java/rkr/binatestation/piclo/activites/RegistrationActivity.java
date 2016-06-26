@@ -1,6 +1,5 @@
 package rkr.binatestation.piclo.activites;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
@@ -17,7 +16,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -32,7 +30,6 @@ public class RegistrationActivity extends AppCompatActivity {
 
     private static final String tag = RegistrationActivity.class.getName();
     TextInputEditText username, fullName, email, phone, password, confirmPassword;
-    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +47,6 @@ public class RegistrationActivity extends AppCompatActivity {
         phone = (TextInputEditText) findViewById(R.id.AR_phone);
         password = (TextInputEditText) findViewById(R.id.AR_password);
         confirmPassword = (TextInputEditText) findViewById(R.id.AR_confirmPassword);
-        mProgressDialog = new ProgressDialog(getContext());
 
         FloatingActionButton register = (FloatingActionButton) findViewById(R.id.AR_register);
         if (register != null) {
@@ -60,20 +56,6 @@ public class RegistrationActivity extends AppCompatActivity {
                     validateInputs();
                 }
             });
-        }
-    }
-
-    public void showProgressDialog(Boolean aBoolean) {
-        if (mProgressDialog != null) {
-            if (aBoolean) {
-                mProgressDialog.setMessage("Please wait ...");
-                mProgressDialog.setCancelable(false);
-                mProgressDialog.show();
-            } else {
-                if (mProgressDialog.isShowing()) {
-                    mProgressDialog.dismiss();
-                }
-            }
         }
     }
 
@@ -119,40 +101,48 @@ public class RegistrationActivity extends AppCompatActivity {
                 VolleySingleTon.getDomainUrl() + Constants.REGISTER, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(tag, "Response payload :- " + response);
-                showProgressDialog(false);
                 try {
+                    Log.d(tag, "Response payload :- " + response);
+                    onBackPressed();
                     parseResponse(new JSONObject(response));
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
             private void parseResponse(JSONObject response) {
-                if (response.has("status") && response.optBoolean("status")) {
-                    Log.i(tag, response.optString("message"));
-                    JSONObject data = response.optJSONObject("data");
-                    if (data != null) {
-                        getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
-                                .putString(Constants.KEY_USER_ID, data.optString("userId"))
-                                .putString(Constants.KEY_USER_FULL_NAME, data.optString("fullName"))
-                                .putString(Constants.KEY_USER_EMAIL, data.optString("email"))
-                                .putString(Constants.KEY_MOBILE, data.optString("mobile"))
-                                .putString(Constants.KEY_USER_NAME, data.optString("userName"))
-                                .putBoolean(Constants.KEY_IS_LOGGED_IN, true)
-                                .apply();
-                        onBackPressed();
+                try {
+                    if (response.has("status") && response.optBoolean("status")) {
+                        Log.i(tag, response.optString("message"));
+                        JSONObject data = response.optJSONObject("data");
+                        if (data != null) {
+                            getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
+                                    .putString(Constants.KEY_USER_ID, data.optString("userId"))
+                                    .putString(Constants.KEY_USER_FULL_NAME, data.optString("fullName"))
+                                    .putString(Constants.KEY_USER_EMAIL, data.optString("email"))
+                                    .putString(Constants.KEY_MOBILE, data.optString("mobile"))
+                                    .putString(Constants.KEY_USER_NAME, data.optString("userName"))
+                                    .putBoolean(Constants.KEY_IS_LOGGED_IN, true)
+                                    .apply();
+                            onBackPressed();
+                        }
+                    } else {
+                        Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 2);
                     }
-                } else {
-                    Util.alert(getContext(), "Alert", response.optString("message"), false);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(tag, "Error :- " + error.toString());
-                showProgressDialog(false);
-                Util.alert(getContext(), "Network Error", "Please check internet connection.!", false);
+                try {
+                    Log.e(tag, "Error :- " + error.toString());
+                    onBackPressed();
+                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }) {
             @Override
@@ -176,7 +166,7 @@ public class RegistrationActivity extends AppCompatActivity {
             }
         };
         VolleySingleTon.getInstance(getContext()).addToRequestQueue(stringRequest);
-        showProgressDialog(true);
+        Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 1);
     }
 
     private RegistrationActivity getContext() {

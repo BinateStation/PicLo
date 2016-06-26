@@ -7,6 +7,9 @@ import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -33,7 +36,8 @@ import rkr.binatestation.piclo.utils.Util;
  */
 public class MyProfile extends Fragment {
     private static final String tag = MyProfile.class.getName();
-    TextInputEditText username, fullNmae, email, phone;
+    TextInputEditText username, fullName, email, phone;
+    FloatingActionButton editSave;
 
     public MyProfile() {
     }
@@ -51,23 +55,26 @@ public class MyProfile extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        setHasOptionsMenu(true);
+
         username = (TextInputEditText) rootView.findViewById(R.id.FP_username);
-        fullNmae = (TextInputEditText) rootView.findViewById(R.id.FP_fullName);
+        fullName = (TextInputEditText) rootView.findViewById(R.id.FP_fullName);
         email = (TextInputEditText) rootView.findViewById(R.id.FP_email);
         phone = (TextInputEditText) rootView.findViewById(R.id.FP_phone);
 
-        final FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.FP_edit);
-        if (fab != null) {
-            fab.setOnClickListener(new View.OnClickListener() {
+        editSave = (FloatingActionButton) rootView.findViewById(R.id.FP_edit);
+        if (editSave != null) {
+            editSave.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    setViewEditable(!view.isSelected());
                     if (view.isSelected()) {
                         view.setSelected(false);
-                        fab.setImageResource(R.drawable.ic_create_black_24dp);
                         updateUserDetails();
                     } else {
                         view.setSelected(true);
-                        fab.setImageResource(R.drawable.ic_save_black_24dp);
+                        editSave.setImageResource(R.drawable.ic_save_black_24dp);
                     }
 
                 }
@@ -78,7 +85,39 @@ public class MyProfile extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.profile, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_changePassword) {
+            getChildFragmentManager().beginTransaction()
+                    .addToBackStack("Change password")
+                    .replace(R.id.FP_contentLayout, ChangePassword.newInstance())
+                    .commit();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setViewEditable(Boolean flag) {
+        fullName.setEnabled(flag);
+        fullName.setFocusableInTouchMode(flag);
+        fullName.setSelection(fullName.getText().length());
+        email.setEnabled(flag);
+        email.setFocusableInTouchMode(flag);
+        email.setSelection(email.getText().length());
+        phone.setEnabled(flag);
+        phone.setFocusableInTouchMode(flag);
+        phone.setSelection(phone.getText().length());
+    }
+
     private void getUserDetails() {
+        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 1);
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 VolleySingleTon.getDomainUrl() + Constants.PROFILE, new Response.Listener<String>() {
             @Override
@@ -92,24 +131,35 @@ public class MyProfile extends Fragment {
             }
 
             private void parseResponse(JSONObject response) {
-                if (response.has("status") && response.optBoolean("status")) {
-                    Log.i(tag, response.optString("message"));
-                    JSONObject dataObject = response.optJSONObject("data");
-                    if (dataObject != null) {
-                        username.setText(dataObject.optString("userName"));
-                        fullNmae.setText(dataObject.optString("fullName"));
-                        email.setText(dataObject.optString("email"));
-                        phone.setText(dataObject.optString("mobile"));
+                try {
+                    getActivity().onBackPressed();
+                    if (response.has("status") && response.optBoolean("status")) {
+                        Log.i(tag, response.optString("message"));
+                        JSONObject dataObject = response.optJSONObject("data");
+                        if (dataObject != null) {
+                            username.setText(dataObject.optString("userName"));
+                            fullName.setText(dataObject.optString("fullName"));
+                            email.setText(dataObject.optString("email"));
+                            phone.setText(dataObject.optString("mobile"));
+                        }
+                    } else {
+                        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2);
                     }
-                } else {
-                    Util.alert(getActivity(), "Alert", response.optString("message"), false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(tag, "Error :- " + error.toString());
-                Util.alert(getActivity(), "Network Error", "Please check internet connection.!", false);
+                try {
+                    getActivity().onBackPressed();
+                    Log.e(tag, "Error :- " + error.toString());
+                    Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }) {
             @Override
@@ -133,6 +183,7 @@ public class MyProfile extends Fragment {
     }
 
     private void updateUserDetails() {
+        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 1);
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 VolleySingleTon.getDomainUrl() + Constants.UPDATE, new Response.Listener<String>() {
             @Override
@@ -146,24 +197,34 @@ public class MyProfile extends Fragment {
             }
 
             private void parseResponse(JSONObject response) {
-                if (response.has("status") && response.optBoolean("status")) {
-                    Log.i(tag, response.optString("message"));
-                    JSONObject dataObject = response.optJSONObject("data");
-                    if (dataObject != null) {
-                        username.setText(dataObject.optString("userName"));
-                        fullNmae.setText(dataObject.optString("fullName"));
-                        email.setText(dataObject.optString("email"));
-                        phone.setText(dataObject.optString("mobile"));
+                try {
+                    getActivity().onBackPressed();
+                    if (response.has("status") && response.optBoolean("status")) {
+                        Log.i(tag, response.optString("message"));
+                        JSONObject dataObject = response.optJSONObject("data");
+                        if (dataObject != null) {
+                            fullName.setText(dataObject.optString("fullName"));
+                            email.setText(dataObject.optString("email"));
+                            phone.setText(dataObject.optString("mobile"));
+                            editSave.setImageResource(R.drawable.ic_create_black_24dp);
+                        }
+                    } else {
+                        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2);
                     }
-                } else {
-                    Util.alert(getActivity(), "Alert", response.optString("message"), false);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(tag, "Error :- " + error.toString());
-                Util.alert(getActivity(), "Network Error", "Please check internet connection.!", false);
+                try {
+                    getActivity().onBackPressed();
+                    Log.e(tag, "Error :- " + error.toString());
+                    Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }) {
             @Override
@@ -171,6 +232,9 @@ public class MyProfile extends Fragment {
                 Map<String, String> params = new HashMap<>();
                 params.put("userId", getContext().getSharedPreferences(getContext().getPackageName(), Context.MODE_PRIVATE)
                         .getString(Constants.KEY_USER_ID, ""));
+                params.put("fullName", fullName.getText().toString());
+                params.put("email", email.getText().toString());
+                params.put("mobile", phone.getText().toString());
 
                 Log.d(tag, getUrl() + " : Request payload :- " + params.toString());
                 return params;

@@ -45,32 +45,40 @@ public class SplashScreen extends AppCompatActivity {
             }
 
             private void parseResponse(JSONObject response) {
-                if (response.has("status") && response.optBoolean("status")) {
-                    Log.i(tag, response.optString("message"));
-                    JSONArray dataArray = response.optJSONArray("data");
-                    if (dataArray != null) {
-                        Categories categoriesDB = new Categories(getActivity());
-                        categoriesDB.open();
-                        categoriesDB.insert(new Categories("0", "All"));
-                        for (int i = 0; i < dataArray.length(); i++) {
-                            JSONObject dataObject = dataArray.optJSONObject(i);
-                            categoriesDB.insert(new Categories(
-                                    dataObject.optString("categoryId"),
-                                    dataObject.optString("categoryName")
-                            ));
+                try {
+                    if (response.has("status") && response.optBoolean("status")) {
+                        Log.i(tag, response.optString("message"));
+                        JSONArray dataArray = response.optJSONArray("data");
+                        if (dataArray != null) {
+                            Categories categoriesDB = new Categories(getActivity());
+                            categoriesDB.open();
+                            categoriesDB.insert(new Categories("0", "All"));
+                            for (int i = 0; i < dataArray.length(); i++) {
+                                JSONObject dataObject = dataArray.optJSONObject(i);
+                                categoriesDB.insert(new Categories(
+                                        dataObject.optString("categoryId"),
+                                        dataObject.optString("categoryName")
+                                ));
+                            }
+                            categoriesDB.close();
                         }
-                        categoriesDB.close();
+                        navigate();
+                    } else {
+                        Util.showProgressOrError(getSupportFragmentManager(), R.id.ASS_contentLayout, 2);
                     }
-                    navigate();
-                } else {
-                    Util.alert(getActivity(), "Alert", response.optString("message"), true);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(tag, "Error :- " + error.toString());
-                Util.alert(getActivity(), "Network Error", "Please check internet connection.!", true);
+                try {
+                    Log.e(tag, "Error :- " + error.toString());
+                    Util.showProgressOrError(getSupportFragmentManager(), R.id.ASS_contentLayout, 2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
         Log.i(tag, "Request url  :- " + jsonObjectRequest.getUrl());

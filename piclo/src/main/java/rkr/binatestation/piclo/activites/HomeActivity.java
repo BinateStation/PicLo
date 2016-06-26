@@ -87,22 +87,26 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void alertForLoggingIn() {
-        new AlertDialog.Builder(getContext())
-                .setTitle("Alert")
-                .setMessage("Need sign in to proceed...!")
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                })
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        startActivity(new Intent(getBaseContext(), LoginActivity.class));
-                    }
-                })
-                .show();
+        try {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Alert")
+                    .setMessage("Need sign in to proceed...!")
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startActivity(new Intent(getBaseContext(), LoginActivity.class));
+                        }
+                    })
+                    .show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -110,7 +114,7 @@ public class HomeActivity extends AppCompatActivity
         Categories categoriesDB = new Categories(getContext());
         categoriesDB.open();
         for (Categories categories : categoriesDB.getAllRows()) {
-            adapter.addFrag(MainContentFragment.newInstance(categories.getCategoryId()), categories.getCategoryName());
+            adapter.addFrag(MainContentFragment.newInstance(categories.getCategoryId(), "H"), categories.getCategoryName());
         }
         categoriesDB.close();
         viewPager.setAdapter(adapter);

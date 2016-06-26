@@ -47,7 +47,7 @@ public class MainContentFragment extends Fragment {
     private static final String tag = MainContentFragment.class.getName();
     SwipeRefreshLayout swipeRefreshLayout;
     PictureAdapter pictureAdapter;
-    private String categoryId;
+    private String categoryId, parentActivity;
 
     public MainContentFragment() {
         // Required empty public constructor
@@ -57,13 +57,15 @@ public class MainContentFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param categoryId Parameter 1.
+     * @param categoryId     Parameter 1.
+     * @param parentActivity parent activity which the fragment is called
      * @return A new instance of fragment MainContentFragment.
      */
-    public static MainContentFragment newInstance(String categoryId) {
+    public static MainContentFragment newInstance(String categoryId, String parentActivity) {
         MainContentFragment fragment = new MainContentFragment();
         Bundle args = new Bundle();
         args.putString("KEY_CATEGORY_ID", categoryId);
+        args.putString("KEY_PARENT_ACTIVITY", parentActivity);
         fragment.setArguments(args);
         return fragment;
     }
@@ -73,6 +75,7 @@ public class MainContentFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             categoryId = getArguments().getString("KEY_CATEGORY_ID");
+            parentActivity = getArguments().getString("KEY_PARENT_ACTIVITY");
         }
     }
 
@@ -117,6 +120,7 @@ public class MainContentFragment extends Fragment {
     }
 
     private void getPictures(final PictureAdapter pictureAdapter) {
+        swipeRefreshLayout.setRefreshing(true);
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 VolleySingleTon.getDomainUrl() + Constants.GALLERY, new Response.Listener<String>() {
             @Override
@@ -131,44 +135,55 @@ public class MainContentFragment extends Fragment {
             }
 
             private void parseResponse(JSONObject response) {
-                if (response.has("status") && response.optBoolean("status")) {
-                    Log.i(tag, response.optString("message"));
-                    JSONArray dataArray = response.optJSONArray("data");
-                    if (dataArray != null) {
-                        List<PictureModel> pictureModelList = new ArrayList<>();
-                        for (int i = 0; i < dataArray.length(); i++) {
-                            JSONObject dataObject = dataArray.optJSONObject(i);
-                            pictureModelList.add(new PictureModel(
-                                    dataObject.optString("title"),
-                                    dataObject.optString("file"),
-                                    new Date(),
-                                    dataObject.optString("imageId"),
-                                    dataObject.optString("userId"),
-                                    dataObject.optString("categoryId"),
-                                    dataObject.optString("courtesy"),
-                                    dataObject.optString("categoryName"),
-                                    dataObject.optString("fullName")
-                            ));
+                try {
+                    if (response.has("status") && response.optBoolean("status")) {
+                        Log.i(tag, response.optString("message"));
+                        JSONArray dataArray = response.optJSONArray("data");
+                        if (dataArray != null) {
+                            List<PictureModel> pictureModelList = new ArrayList<>();
+                            for (int i = 0; i < dataArray.length(); i++) {
+                                JSONObject dataObject = dataArray.optJSONObject(i);
+                                pictureModelList.add(new PictureModel(
+                                        dataObject.optString("title"),
+                                        dataObject.optString("file"),
+                                        new Date(),
+                                        dataObject.optString("imageId"),
+                                        dataObject.optString("userId"),
+                                        dataObject.optString("categoryId"),
+                                        dataObject.optString("courtesy"),
+                                        dataObject.optString("categoryName"),
+                                        dataObject.optString("fullName")
+                                ));
+                            }
+                            pictureAdapter.setPictureModelList(pictureModelList);
+                            pictureAdapter.notifyDataSetChanged();
                         }
-                        pictureAdapter.setPictureModelList(pictureModelList);
-                        pictureAdapter.notifyDataSetChanged();
+                    } else {
+                        Util.showProgressOrError(getFragmentManager(), R.id.FMC_contentLayout, 2);
                     }
-                } else {
-                    Util.alert(getActivity(), "Alert", response.optString("message"), false);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(tag, "Error :- " + error.toString());
-                swipeRefreshLayout.setRefreshing(false);
-                Util.alert(getActivity(), "Network Error", "Please check internet connection.!", false);
+                try {
+                    Log.e(tag, "Error :- " + error.toString());
+                    swipeRefreshLayout.setRefreshing(false);
+                    Util.showProgressOrError(getFragmentManager(), R.id.FMC_contentLayout, 2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("category", categoryId);
+                if (parentActivity.equals("P")) {
+                    params.put("userId", getContext().getSharedPreferences(getContext().getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, ""));
+                }
 
                 Log.d(tag, getUrl() + " : Request payload :- " + params.toString());
                 return params;

@@ -40,4 +40,8 @@
     <string name="share_to_facebook">Share to Facebook</string>
     <string name="share_to_whats_app">Share to whats app</string>
     <string name="save">Save</string>
+    <string name="change_password">Change Password</string>
+    <string name="old_password">Old Password</string>
+    <string name="new_password">New Password</string>
+    <string name="something_went_wrong">Something went wrong</string>
 </resources>

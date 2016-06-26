@@ -36,7 +36,6 @@ import com.alexbbb.uploadservice.ContentType;
 import com.alexbbb.uploadservice.MultipartUploadRequest;
 import com.soundcloud.android.crop.Crop;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -72,9 +71,13 @@ public class UploadPicture extends AppCompatActivity {
         @Override
         public void onProgress(String uploadId, int progress) {
             Log.i(tag, "The progress of the upload with ID " + uploadId + " is: " + progress);
-            if (mProgressDialog != null && !mProgressDialog.isShowing()) {
-                showProgressDialog(true, uploadId, "Image Uploading...");
-                mProgressDialog.setProgress(progress);
+            try {
+                if (mProgressDialog != null && !mProgressDialog.isShowing()) {
+                    showProgressDialog(true, uploadId, "Image Uploading...");
+                    mProgressDialog.setProgress(progress);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -86,27 +89,31 @@ public class UploadPicture extends AppCompatActivity {
 
         @Override
         public void onError(String uploadId, Exception exception) {
-            showProgressDialog(false, "", "");
+            try {
+                showProgressDialog(false, "", "");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             Log.e(tag, "Error in upload with ID: " + uploadId + ". "
                     + exception.getLocalizedMessage(), exception);
         }
 
         @Override
         public void onCompleted(String uploadId, int serverResponseCode, String serverResponseMessage) {
-            showProgressDialog(false, "", "");
             Log.i(tag, "Upload with ID " + uploadId
                     + " has been completed with HTTP " + serverResponseCode
                     + ". Response from server: " + serverResponseMessage);
             try {
+                showProgressDialog(false, "", "");
                 JSONObject response = new JSONObject(serverResponseMessage);
                 if (response.has("status") && response.optBoolean("status")) {
                     Log.i(tag, response.optString("message"));
                     Util.alert(getContext(), "Alert", response.optString("message"), true);
                 } else {
                     Log.e(tag, response.optString("message"));
-                    Util.alert(getContext(), "Alert", response.optString("message"), false);
+                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AUP_contentLayout, 2);
                 }
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

@@ -4,20 +4,26 @@
     android:layout_height="match_parent"
     tools:context="rkr.binatestation.piclo.fragments.MainContentFragment">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/FMC_swipeRefresh"
+    <FrameLayout
+        android:id="@+id/FMC_contentLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <rkr.binatestation.piclo.utils.AutoFitRecyclerView
-            android:id="@+id/FMC_mainContentRecyclerView"
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/FMC_swipeRefresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:columnWidth="200dp"
-            android:padding="8dp" />
+            android:layout_height="match_parent">
 
-    </android.support.v4.widget.SwipeRefreshLayout>
+            <rkr.binatestation.piclo.utils.AutoFitRecyclerView
+                android:id="@+id/FMC_mainContentRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:columnWidth="200dp"
+                android:padding="8dp" />
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+    </FrameLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/FMC_upload"
