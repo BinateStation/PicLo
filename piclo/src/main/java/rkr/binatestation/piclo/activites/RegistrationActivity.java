@@ -103,7 +103,7 @@ public class RegistrationActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 try {
                     Log.d(tag, "Response payload :- " + response);
-                    onBackPressed();
+                    Util.hideProgressOrError(getSupportFragmentManager(), "REGISTRATION_ACTIVITY_PROGRESS");
                     parseResponse(new JSONObject(response));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -127,7 +127,7 @@ public class RegistrationActivity extends AppCompatActivity {
                             onBackPressed();
                         }
                     } else {
-                        Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 2);
+                        Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 2, "REGISTRATION_ACTIVITY_ERROR");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -138,8 +138,8 @@ public class RegistrationActivity extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 try {
                     Log.e(tag, "Error :- " + error.toString());
-                    onBackPressed();
-                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 2);
+                    Util.hideProgressOrError(getSupportFragmentManager(), "REGISTRATION_ACTIVITY_PROGRESS");
+                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 2, "REGISTRATION_ACTIVITY_ERROR");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -166,7 +166,7 @@ public class RegistrationActivity extends AppCompatActivity {
             }
         };
         VolleySingleTon.getInstance(getContext()).addToRequestQueue(stringRequest);
-        Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 1);
+        Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 1, "REGISTRATION_ACTIVITY_PROGRESS");
     }
 
     private RegistrationActivity getContext() {

@@ -172,11 +172,23 @@ public class Util {
     /**
      * Shows the progress UI and hides the content form.
      */
-    public static void showProgressOrError(FragmentManager fragmentManager, int contentFormId, int type) {
+    public static void showProgressOrError(FragmentManager fragmentManager, int contentFormId, int type, String tag) {
         try {
             fragmentManager.beginTransaction()
-                    .replace(contentFormId, ProgressError.newInstance(type))
-                    .addToBackStack("ProgressError")
+                    .add(contentFormId, ProgressError.newInstance(type), tag)
+                    .commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Shows the progress UI and hides the content form.
+     */
+    public static void hideProgressOrError(FragmentManager fragmentManager, String tag) {
+        try {
+            fragmentManager.beginTransaction()
+                    .remove(fragmentManager.findFragmentByTag(tag))
                     .commit();
         } catch (Exception e) {
             e.printStackTrace();

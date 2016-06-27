@@ -115,22 +115,24 @@
 
                 <ImageButton
                     style="?attr/buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:contentDescription="@string/share_to_facebook"
                     android:src="@drawable/ic_facebook_24dp" />
 
                 <ImageButton
                     style="?attr/buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
                     android:contentDescription="@string/share_to_whats_app"
                     android:src="@drawable/ic_whatsapp_24dp" />
 
                 <ImageButton
                     style="?attr/buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:contentDescription="@string/save"
                     android:src="@drawable/ic_save_black_24dp" />
             </android.support.v7.widget.ButtonBarLayout>

@@ -111,7 +111,7 @@ public class UploadPicture extends AppCompatActivity {
                     Util.alert(getContext(), "Alert", response.optString("message"), true);
                 } else {
                     Log.e(tag, response.optString("message"));
-                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AUP_contentLayout, 2);
+                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AUP_contentLayout, 2, "UPLOAD_ACTIVITY_ERROR");
                 }
             } catch (Exception e) {
                 e.printStackTrace();

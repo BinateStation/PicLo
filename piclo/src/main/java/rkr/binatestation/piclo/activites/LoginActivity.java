@@ -131,7 +131,7 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            Util.showProgressOrError(getSupportFragmentManager(), R.id.AL_contentLayout, 1);
+            Util.showProgressOrError(getSupportFragmentManager(), R.id.AL_contentLayout, 1, "LOGIN_ACTIVITY_PROGRESS");
             signIn(email, password);
         }
     }
@@ -143,7 +143,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 try {
                     Log.d(tag, "Response payload :- " + response);
-                    onBackPressed();
+                    Util.hideProgressOrError(getSupportFragmentManager(), "LOGIN_ACTIVITY_PROGRESS");
                     parseResponse(new JSONObject(response));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -167,7 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                             onBackPressed();
                         }
                     } else {
-                        Util.showProgressOrError(getSupportFragmentManager(), R.id.AL_contentLayout, 2);
+                        Util.showProgressOrError(getSupportFragmentManager(), R.id.AL_contentLayout, 2, "LOGIN_ACTIVITY_ERROR");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -178,8 +178,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 try {
                     Log.e(tag, "Error :- " + error.toString());
-                    onBackPressed();
-                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AL_contentLayout, 2);
+                    Util.hideProgressOrError(getSupportFragmentManager(), "LOGIN_ACTIVITY_PROGRESS");
+                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AL_contentLayout, 2, "LOGIN_ACTIVITY_ERROR");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

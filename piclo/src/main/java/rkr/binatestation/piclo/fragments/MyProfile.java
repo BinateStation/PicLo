@@ -117,7 +117,7 @@ public class MyProfile extends Fragment {
     }
 
     private void getUserDetails() {
-        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 1);
+        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 1, "MY_PROFILE_ACTIVITY_PROGRESS");
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 VolleySingleTon.getDomainUrl() + Constants.PROFILE, new Response.Listener<String>() {
             @Override
@@ -132,7 +132,7 @@ public class MyProfile extends Fragment {
 
             private void parseResponse(JSONObject response) {
                 try {
-                    getActivity().onBackPressed();
+                    Util.hideProgressOrError(getFragmentManager(), "MY_PROFILE_ACTIVITY_PROGRESS");
                     if (response.has("status") && response.optBoolean("status")) {
                         Log.i(tag, response.optString("message"));
                         JSONObject dataObject = response.optJSONObject("data");
@@ -143,20 +143,19 @@ public class MyProfile extends Fragment {
                             phone.setText(dataObject.optString("mobile"));
                         }
                     } else {
-                        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2);
+                        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2, "MY_PROFILE_ACTIVITY_ERROR");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                } finally {
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 try {
-                    getActivity().onBackPressed();
+                    Util.hideProgressOrError(getFragmentManager(), "MY_PROFILE_ACTIVITY_PROGRESS");
                     Log.e(tag, "Error :- " + error.toString());
-                    Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2);
+                    Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2, "MY_PROFILE_ACTIVITY_ERROR");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -183,7 +182,7 @@ public class MyProfile extends Fragment {
     }
 
     private void updateUserDetails() {
-        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 1);
+        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 1, "MY_PROFILE_ACTIVITY_PROGRESS");
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 VolleySingleTon.getDomainUrl() + Constants.UPDATE, new Response.Listener<String>() {
             @Override
@@ -198,7 +197,7 @@ public class MyProfile extends Fragment {
 
             private void parseResponse(JSONObject response) {
                 try {
-                    getActivity().onBackPressed();
+                    Util.hideProgressOrError(getFragmentManager(), "MY_PROFILE_ACTIVITY_PROGRESS");
                     if (response.has("status") && response.optBoolean("status")) {
                         Log.i(tag, response.optString("message"));
                         JSONObject dataObject = response.optJSONObject("data");
@@ -209,7 +208,7 @@ public class MyProfile extends Fragment {
                             editSave.setImageResource(R.drawable.ic_create_black_24dp);
                         }
                     } else {
-                        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2);
+                        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2, "MY_PROFILE_ACTIVITY_ERROR");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -219,9 +218,9 @@ public class MyProfile extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 try {
-                    getActivity().onBackPressed();
+                    Util.hideProgressOrError(getFragmentManager(), "MY_PROFILE_ACTIVITY_PROGRESS");
                     Log.e(tag, "Error :- " + error.toString());
-                    Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2);
+                    Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 2, "MY_PROFILE_ACTIVITY_ERROR");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

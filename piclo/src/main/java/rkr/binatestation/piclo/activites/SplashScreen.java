@@ -64,7 +64,7 @@ public class SplashScreen extends AppCompatActivity {
                         }
                         navigate();
                     } else {
-                        Util.showProgressOrError(getSupportFragmentManager(), R.id.ASS_contentLayout, 2);
+                        Util.showProgressOrError(getSupportFragmentManager(), R.id.ASS_contentLayout, 2, "SPLASH_SCREEN_ACTIVITY_ERROR");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -75,7 +75,7 @@ public class SplashScreen extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 try {
                     Log.e(tag, "Error :- " + error.toString());
-                    Util.showProgressOrError(getSupportFragmentManager(), R.id.ASS_contentLayout, 2);
+                    Util.showProgressOrError(getSupportFragmentManager(), R.id.ASS_contentLayout, 2, "SPLASH_SCREEN_ACTIVITY_ERROR");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

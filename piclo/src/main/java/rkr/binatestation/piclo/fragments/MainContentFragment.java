@@ -159,7 +159,7 @@ public class MainContentFragment extends Fragment {
                             pictureAdapter.notifyDataSetChanged();
                         }
                     } else {
-                        Util.showProgressOrError(getFragmentManager(), R.id.FMC_contentLayout, 2);
+                        Util.showProgressOrError(getChildFragmentManager(), R.id.FMC_contentLayout, 2, "MAIN_CONTENT_FRAGMENT_ERROR");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -171,7 +171,7 @@ public class MainContentFragment extends Fragment {
                 try {
                     Log.e(tag, "Error :- " + error.toString());
                     swipeRefreshLayout.setRefreshing(false);
-                    Util.showProgressOrError(getFragmentManager(), R.id.FMC_contentLayout, 2);
+                    Util.showProgressOrError(getChildFragmentManager(), R.id.FMC_contentLayout, 2, "MAIN_CONTENT_FRAGMENT_ERROR");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -80,7 +80,7 @@ public class ChangePassword extends Fragment {
     }
 
     private void changePassword() {
-        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 1);
+        Util.showProgressOrError(getFragmentManager(), R.id.FP_contentLayout, 1, "CHANGE_PASSWORD_ACTIVITY_PROGRESS");
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 VolleySingleTon.getDomainUrl() + Constants.CHANGE_PASSWORD, new Response.Listener<String>() {
             @Override
@@ -95,12 +95,12 @@ public class ChangePassword extends Fragment {
 
             private void parseResponse(JSONObject response) {
                 try {
-                    getActivity().onBackPressed();
+                    Util.hideProgressOrError(getFragmentManager(), "CHANGE_PASSWORD_ACTIVITY_PROGRESS");
                     if (response.has("status") && response.optBoolean("status")) {
                         Log.i(tag, response.optString("message"));
                         Util.alert(getActivity(), "Alert", response.optString("message"), true);
                     } else {
-                        Util.showProgressOrError(getFragmentManager(), R.id.FCP_contentLayout, 2);
+                        Util.showProgressOrError(getFragmentManager(), R.id.FCP_contentLayout, 2, "CHANGE_PASSWORD_ACTIVITY_ERROR");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -110,9 +110,9 @@ public class ChangePassword extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 try {
-                    getActivity().onBackPressed();
+                    Util.hideProgressOrError(getFragmentManager(), "CHANGE_PASSWORD_ACTIVITY_PROGRESS");
                     Log.e(tag, "Error :- " + error.toString());
-                    Util.showProgressOrError(getFragmentManager(), R.id.FCP_contentLayout, 2);
+                    Util.showProgressOrError(getFragmentManager(), R.id.FCP_contentLayout, 2, "CHANGE_PASSWORD_ACTIVITY_ERROR");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

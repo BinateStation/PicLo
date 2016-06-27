@@ -52,6 +52,9 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
 
     @Override
     public void onBindViewHolder(final ItemHolder holder, int position) {
+        holder.picture.setDefaultImageResId(R.drawable.ic_piclo_24dp);
+        holder.picture.setErrorImageResId(R.drawable.ic_piclo_24dp);
+        holder.picture.setAdjustViewBounds(true);
         holder.picture.setImageUrl(
                 VolleySingleTon.getDomainUrlForImage() + getItem(position).getFile(),
                 VolleySingleTon.getInstance(holder.picture.getContext()).getImageLoader()
