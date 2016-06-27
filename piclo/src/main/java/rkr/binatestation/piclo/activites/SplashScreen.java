@@ -1,7 +1,12 @@
 package rkr.binatestation.piclo.activites;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -62,7 +67,9 @@ public class SplashScreen extends AppCompatActivity {
                             }
                             categoriesDB.close();
                         }
-                        navigate();
+                        if (isStoragePermissionGranted()) {
+                            navigate();
+                        }
                     } else {
                         Util.showProgressOrError(getSupportFragmentManager(), R.id.ASS_contentLayout, 2, "SPLASH_SCREEN_ACTIVITY_ERROR");
                     }
@@ -85,7 +92,37 @@ public class SplashScreen extends AppCompatActivity {
         VolleySingleTon.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
     }
 
-    public AppCompatActivity getActivity() {
+    public boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(tag, "Permission is granted");
+                return true;
+            } else {
+
+                Log.v(tag, "Permission is revoked");
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        } else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(tag, "Permission is granted");
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Log.v(tag, "Permission: " + permissions[0] + "was " + grantResults[0]);
+            //resume tasks needing this permission
+            if (isStoragePermissionGranted()) {
+                navigate();
+            }
+        }
+    }
+
+    public SplashScreen getActivity() {
         return SplashScreen.this;
     }
 }

@@ -31,7 +31,7 @@ public class Util {
      */
 
     private static final String captureImagePath = Environment.getExternalStorageDirectory().toString() +
-            File.separator + "PickLo" + File.separator + "Images" + File.separator;
+            File.separator + "PicLo" + File.separator + "Images" + File.separator;
 
     /**
      * Method to check Weather a valid Email ID
