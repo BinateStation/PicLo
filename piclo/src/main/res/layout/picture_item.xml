@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
@@ -23,7 +24,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:scaleType="fitXY" />
+                android:scaleType="centerCrop" />
 
             <FrameLayout
                 android:layout_width="wrap_content"
@@ -62,7 +63,8 @@
                         android:background="@drawable/badge_circle"
                         android:text="100+"
                         android:textColor="@color/colorAccent"
-                        android:textSize="5sp" />
+                        android:textSize="5sp"
+                        tools:ignore="SmallSp" />
                 </RelativeLayout>
             </FrameLayout>
         </RelativeLayout>
@@ -70,41 +72,47 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingBottom="5dp"
+                android:paddingEnd="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingStart="5dp">
 
                 <TextView
                     android:id="@+id/PI_title"
+                    style="@style/Base.TextAppearance.AppCompat.Title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
                     android:singleLine="true"
-                    android:text="title"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/PI_courtesy"
+                    style="@style/Base.TextAppearance.AppCompat.Subhead"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
-                    android:singleLine="true"
-                    android:text="troll malayalam" />
+                    android:singleLine="true" />
 
                 <TextView
                     android:id="@+id/PI_uploadedBy"
+                    style="@style/Base.TextAppearance.AppCompat.Caption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
-                    android:singleLine="true"
-                    android:text="Andrues" />
+                    android:singleLine="true" />
             </LinearLayout>
 
             <android.support.v7.widget.ButtonBarLayout
