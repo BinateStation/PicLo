@@ -32,11 +32,18 @@ public class SplashScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
-        getCategories();
+        Categories categoriesDB = new Categories(getContext());
+        categoriesDB.open();
+        if (categoriesDB.getAllRows().isEmpty()) {
+            getCategories();
+        } else {
+            navigate();
+        }
+        categoriesDB.close();
     }
 
     private void navigate() {
-        startActivity(new Intent(getActivity(), HomeActivity.class));
+        startActivity(new Intent(getContext(), HomeActivity.class));
         finish();
     }
 
@@ -55,7 +62,7 @@ public class SplashScreen extends AppCompatActivity {
                         Log.i(tag, response.optString("message"));
                         JSONArray dataArray = response.optJSONArray("data");
                         if (dataArray != null) {
-                            Categories categoriesDB = new Categories(getActivity());
+                            Categories categoriesDB = new Categories(getContext());
                             categoriesDB.open();
                             categoriesDB.insert(new Categories("0", "All"));
                             for (int i = 0; i < dataArray.length(); i++) {
@@ -89,7 +96,7 @@ public class SplashScreen extends AppCompatActivity {
             }
         });
         Log.i(tag, "Request url  :- " + jsonObjectRequest.getUrl());
-        VolleySingleTon.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
+        VolleySingleTon.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
     }
 
     public boolean isStoragePermissionGranted() {
@@ -101,7 +108,7 @@ public class SplashScreen extends AppCompatActivity {
             } else {
 
                 Log.v(tag, "Permission is revoked");
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                ActivityCompat.requestPermissions(getContext(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
             }
         } else { //permission is automatically granted on sdk<23 upon installation
@@ -122,7 +129,7 @@ public class SplashScreen extends AppCompatActivity {
         }
     }
 
-    public SplashScreen getActivity() {
+    public SplashScreen getContext() {
         return SplashScreen.this;
     }
 }
