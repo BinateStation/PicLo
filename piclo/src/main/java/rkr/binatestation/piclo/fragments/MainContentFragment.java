@@ -88,7 +88,7 @@ public class MainContentFragment extends Fragment {
         AutoFitRecyclerView mainContentRecyclerView = (AutoFitRecyclerView) view.findViewById(R.id.FMC_mainContentRecyclerView);
         if (mainContentRecyclerView != null) {
             mainContentRecyclerView.setHasFixedSize(true);
-            mainContentRecyclerView.setAdapter(pictureAdapter = new PictureAdapter());
+            mainContentRecyclerView.setAdapter(pictureAdapter = new PictureAdapter(getActivity()));
         }
         if (pictureAdapter != null) {
             getPictures(pictureAdapter);

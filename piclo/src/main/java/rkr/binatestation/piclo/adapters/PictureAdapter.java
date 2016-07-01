@@ -1,9 +1,12 @@
 package rkr.binatestation.piclo.adapters;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rkr.binatestation.piclo.R;
+import rkr.binatestation.piclo.activites.ImageFullScreenActivity;
 import rkr.binatestation.piclo.models.PictureModel;
 import rkr.binatestation.piclo.network.VolleySingleTon;
 import rkr.binatestation.piclo.utils.Util;
@@ -36,6 +40,12 @@ import rkr.binatestation.piclo.utils.Util;
  */
 public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHolder> {
     List<PictureModel> pictureModelList = new ArrayList<>();
+
+    Activity activity;
+
+    public PictureAdapter(Activity activity) {
+        this.activity = activity;
+    }
 
     /**
      * Method to get single item from the list according to the position argument
@@ -109,6 +119,20 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
                 downloadFileFromURL(view.getContext(),
                         VolleySingleTon.getDomainUrlForImage() + getItem(holder.getAdapterPosition()).getFile(),
                         getItem(holder.getAdapterPosition()).getTitle());
+            }
+        });
+        holder.picture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), ImageFullScreenActivity.class);
+                intent.putExtra("IMAGE", getItem(holder.getAdapterPosition()).getFile());
+                ActivityOptionsCompat options = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation(activity, holder.picture, "Image");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    activity.startActivity(intent, options.toBundle());
+                } else {
+                    activity.startActivity(intent);
+                }
             }
         });
     }

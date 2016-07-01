@@ -38,6 +38,7 @@
             android:name=".activites.RegistrationActivity"
             android:label="@string/registration"
             android:theme="@style/AppTheme.Light" />
+        <activity android:name=".activites.ImageFullScreenActivity"></activity>
     </application>
 
 </manifest>
