@@ -126,8 +126,8 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), ImageFullScreenActivity.class);
                 intent.putExtra("IMAGE", getItem(holder.getAdapterPosition()).getFile());
-                ActivityOptionsCompat options = ActivityOptionsCompat.
-                        makeSceneTransitionAnimation(activity, holder.picture, "Image");
+                ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(holder.view, (int) holder.view.getX(), (int) holder.view.getY()
+                        , holder.view.getWidth(), holder.view.getHeight());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     activity.startActivity(intent, options.toBundle());
                 } else {
