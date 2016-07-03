@@ -1,5 +1,6 @@
 package rkr.binatestation.piclo.adapters;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -47,6 +49,7 @@ import rkr.binatestation.piclo.utils.Util;
  * PictureAdapter.
  */
 public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHolder> {
+    private static final String tag = PictureAdapter.class.getName();
     List<PictureModel> pictureModelList = new ArrayList<>();
     MainContentFragment thisObject;
 
@@ -117,7 +120,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         holder.whatsAppShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isPackageInstalled("com.whatsapp", thisObject.getContext())) {
+                if (isPackageInstalled("com.whatsapp", thisObject.getContext()) && isStoragePermissionGranted()) {
                     downloadFileFromURL(view.getContext(),
                             VolleySingleTon.getDomainUrlForImage() + getItem(holder.getAdapterPosition()).getFile(),
                             getItem(holder.getAdapterPosition()).getTitle(), 1);
@@ -127,9 +130,11 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         holder.saveImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                downloadFileFromURL(view.getContext(),
-                        VolleySingleTon.getDomainUrlForImage() + getItem(holder.getAdapterPosition()).getFile(),
-                        getItem(holder.getAdapterPosition()).getTitle(), 2);
+                if (isStoragePermissionGranted()) {
+                    downloadFileFromURL(view.getContext(),
+                            VolleySingleTon.getDomainUrlForImage() + getItem(holder.getAdapterPosition()).getFile(),
+                            getItem(holder.getAdapterPosition()).getTitle(), 2);
+                }
             }
         });
         holder.picture.setOnClickListener(new View.OnClickListener() {
@@ -146,6 +151,24 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
                 }
             }
         });
+    }
+
+    public boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (thisObject.getActivity().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(tag, "Permission is granted");
+                return true;
+            } else {
+
+                Log.v(tag, "Permission is revoked");
+                ActivityCompat.requestPermissions(thisObject.getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        } else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(tag, "Permission is granted");
+            return true;
+        }
     }
 
     public void shareToFacebook(Bitmap image) {
