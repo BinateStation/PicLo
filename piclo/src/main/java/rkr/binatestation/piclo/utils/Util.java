@@ -195,4 +195,17 @@ public class Util {
         }
     }
 
+    public static void showAlert(final Activity activity, String title, String message, final Boolean goBack) {
+        new AlertDialog.Builder(activity)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (goBack) {
+                            activity.onBackPressed();
+                        }
+                    }
+                }).show();
+    }
 }

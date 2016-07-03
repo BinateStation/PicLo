@@ -71,21 +71,18 @@ public class MainContentFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            categoryId = getArguments().getString("KEY_CATEGORY_ID");
-            parentActivity = getArguments().getString("KEY_PARENT_ACTIVITY");
-        }
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_main_content, container, false);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.FMC_swipeRefresh);
         AutoFitRecyclerView mainContentRecyclerView = (AutoFitRecyclerView) view.findViewById(R.id.FMC_mainContentRecyclerView);
+
+        if (getArguments() != null) {
+            categoryId = getArguments().getString("KEY_CATEGORY_ID");
+            parentActivity = getArguments().getString("KEY_PARENT_ACTIVITY");
+        }
+
         if (mainContentRecyclerView != null) {
             mainContentRecyclerView.setHasFixedSize(true);
             mainContentRecyclerView.setAdapter(pictureAdapter = new PictureAdapter(getActivity()));

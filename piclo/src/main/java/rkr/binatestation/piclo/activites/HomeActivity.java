@@ -27,6 +27,7 @@ import rkr.binatestation.piclo.utils.Constants;
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     View header;
+    ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +65,12 @@ public class HomeActivity extends AppCompatActivity
             setNavigationHeader();
         }
 
-        ViewPager mViewPager = (ViewPager) findViewById(R.id.CH_homeViewPager);
+        mViewPager = (ViewPager) findViewById(R.id.CH_homeViewPager);
         setupViewPager(mViewPager);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.ABH_TabLayout);
         assert tabLayout != null;
-        tabLayout.setupWithViewPager(mViewPager);
+        tabLayout.setupWithViewPager(mViewPager, true);
 
 
     }
@@ -101,6 +102,35 @@ public class HomeActivity extends AppCompatActivity
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             startActivity(new Intent(getBaseContext(), LoginActivity.class));
+                        }
+                    })
+                    .show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void alertForLogout(final MenuItem item) {
+        try {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Alert")
+                    .setMessage("Are you sure you want to logout from Piclo, needs to login again for upload images...!")
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            item.setTitle("Login");
+                            getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
+                                    .putBoolean(Constants.KEY_IS_LOGGED_IN, false).apply();
+                            setNavigationHeader();
+                            if (mViewPager != null && mViewPager.getAdapter().getCount() > 0) {
+                                mViewPager.setCurrentItem(0);
+                            }
                         }
                     })
                     .show();
@@ -163,10 +193,7 @@ public class HomeActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == R.id.action_login_logout) {
             if (item.getTitle().equals("Logout")) {
-                item.setTitle("Login");
-                getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
-                        .putBoolean(Constants.KEY_IS_LOGGED_IN, false).apply();
-                setNavigationHeader();
+                alertForLogout(item);
             } else {
                 startActivity(new Intent(getBaseContext(), LoginActivity.class));
             }
