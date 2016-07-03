@@ -127,6 +127,7 @@ public class MainContentFragment extends Fragment {
             public void onResponse(String response) {
                 Log.d(tag, "Response payload :- " + response);
                 swipeRefreshLayout.setRefreshing(false);
+                Util.hideProgressOrError(getChildFragmentManager(), "MAIN_CONTENT_FRAGMENT_PROGRESS");
                 try {
                     parseResponse(new JSONObject(response));
                 } catch (JSONException e) {
@@ -171,6 +172,7 @@ public class MainContentFragment extends Fragment {
                 try {
                     Log.e(tag, "Error :- " + error.toString());
                     swipeRefreshLayout.setRefreshing(false);
+                    Util.hideProgressOrError(getChildFragmentManager(), "MAIN_CONTENT_FRAGMENT_PROGRESS");
                     Util.showProgressOrError(getChildFragmentManager(), R.id.FMC_contentLayout, 2, "MAIN_CONTENT_FRAGMENT_ERROR");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -197,5 +199,6 @@ public class MainContentFragment extends Fragment {
             }
         };
         VolleySingleTon.getInstance(getActivity()).addToRequestQueue(stringRequest);
+        Util.showProgressOrError(getChildFragmentManager(), R.id.FMC_contentLayout, 1, "MAIN_CONTENT_FRAGMENT_PROGRESS");
     }
 }
