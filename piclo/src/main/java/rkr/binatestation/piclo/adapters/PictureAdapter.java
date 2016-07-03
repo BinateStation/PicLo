@@ -3,8 +3,10 @@ package rkr.binatestation.piclo.adapters;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -115,7 +117,11 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         holder.whatsAppShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                share(view.getContext(), VolleySingleTon.getDomainUrlForImage() + getItem(holder.getAdapterPosition()).getFile());
+                if (isPackageInstalled("com.whatsapp", thisObject.getContext())) {
+                    downloadFileFromURL(view.getContext(),
+                            VolleySingleTon.getDomainUrlForImage() + getItem(holder.getAdapterPosition()).getFile(),
+                            getItem(holder.getAdapterPosition()).getTitle(), 1);
+                }
             }
         });
         holder.saveImage.setOnClickListener(new View.OnClickListener() {
@@ -123,7 +129,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
             public void onClick(View view) {
                 downloadFileFromURL(view.getContext(),
                         VolleySingleTon.getDomainUrlForImage() + getItem(holder.getAdapterPosition()).getFile(),
-                        getItem(holder.getAdapterPosition()).getTitle());
+                        getItem(holder.getAdapterPosition()).getTitle(), 2);
             }
         });
         holder.picture.setOnClickListener(new View.OnClickListener() {
@@ -154,12 +160,23 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         }
     }
 
-    private void share(Context context, String url) {
+    private void share(Context context, Uri uri) {
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, url);
-        sendIntent.setType("text/plain");
+        sendIntent.putExtra(Intent.EXTRA_STREAM, uri);
+        sendIntent.setType("image/jpeg");
+        sendIntent.setPackage("com.whatsapp");
         context.startActivity(sendIntent);
+    }
+
+    private boolean isPackageInstalled(String packageName, Context context) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 
     private Bitmap getBitMapFromImageView(NetworkImageView networkImageView) {
@@ -179,7 +196,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         return pictureModelList.size();
     }
 
-    private void downloadFileFromURL(final Context context, String url, final String fileName) {
+    private void downloadFileFromURL(final Context context, String url, final String fileName, final int type) {
         new AsyncTask<String, String, String>() {
             ProgressDialog mProgressDialog;
 
@@ -191,7 +208,11 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
             protected void onPreExecute() {
                 super.onPreExecute();
                 mProgressDialog = new ProgressDialog(context);
-                mProgressDialog.setMessage("Downloading file. Please wait...");
+                if (type == 1) {
+                    mProgressDialog.setMessage("Please wait until prepare your file for sharing..");
+                } else {
+                    mProgressDialog.setMessage("Downloading file. Please wait...");
+                }
                 mProgressDialog.setIndeterminate(false);
                 mProgressDialog.setMax(100);
                 mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -208,6 +229,12 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
                 int count;
                 try {
                     URL url = new URL(f_url[0]);
+                    String filePath;
+                    if (type == 1) {
+                        filePath = Util.getCaptureImagePath() + "/whats_app_share.jpg";
+                    } else {
+                        filePath = Util.getCaptureImagePath() + "/" + fileName.replace(" ", "_") + ".jpg";
+                    }
                     URLConnection urlConnection = url.openConnection();
                     urlConnection.connect();
                     // this will be useful so that you can show a tipical 0-100% progress bar
@@ -217,7 +244,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
                     InputStream input = new BufferedInputStream(url.openStream(), 8192);
 
                     // Output stream
-                    OutputStream output = new FileOutputStream(Util.getCaptureImagePath() + "/" + fileName.replace(" ", "_") + ".jpg");
+                    OutputStream output = new FileOutputStream(filePath);
 
                     byte data[] = new byte[1024];
 
@@ -239,12 +266,12 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
                     // closing streams
                     output.close();
                     input.close();
+                    return filePath;
 
                 } catch (Exception e) {
                     Log.e("Error: ", e.getMessage());
                 }
-
-                return null;
+                return "";
             }
 
             /**
@@ -264,6 +291,9 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
                 // dismiss the dialog after the file was downloaded
                 if (mProgressDialog.isShowing()) {
                     mProgressDialog.dismiss();
+                }
+                if (type == 1 && (!file_url.equalsIgnoreCase(""))) {
+                    share(thisObject.getContext(), Uri.parse(file_url));
                 }
             }
         }.execute(url);
