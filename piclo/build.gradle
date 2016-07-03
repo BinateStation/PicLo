@@ -19,7 +19,9 @@ android {
     productFlavors {
     }
 }
-
+repositories {
+    mavenCentral()
+}
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
@@ -29,5 +31,5 @@ dependencies {
     compile 'com.soundcloud.android:android-crop:1.0.1@aar'
     compile 'com.alexbbb:uploadservice:1.4'
     compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.android.support:support-v4:24.0.0'
+    compile 'com.facebook.android:facebook-android-sdk:4.13.2'
 }

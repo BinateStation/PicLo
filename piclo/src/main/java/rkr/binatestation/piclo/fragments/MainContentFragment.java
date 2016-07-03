@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import rkr.binatestation.piclo.R;
-import rkr.binatestation.piclo.activites.UploadPicture;
+import rkr.binatestation.piclo.activities.UploadPicture;
 import rkr.binatestation.piclo.adapters.PictureAdapter;
 import rkr.binatestation.piclo.models.PictureModel;
 import rkr.binatestation.piclo.network.VolleySingleTon;
@@ -85,7 +85,7 @@ public class MainContentFragment extends Fragment {
 
         if (mainContentRecyclerView != null) {
             mainContentRecyclerView.setHasFixedSize(true);
-            mainContentRecyclerView.setAdapter(pictureAdapter = new PictureAdapter(getActivity()));
+            mainContentRecyclerView.setAdapter(pictureAdapter = new PictureAdapter(MainContentFragment.this));
         }
         if (pictureAdapter != null) {
             getPictures(pictureAdapter);
@@ -112,7 +112,6 @@ public class MainContentFragment extends Fragment {
         } else {
             fab.setVisibility(View.GONE);
         }
-
         return view;
     }
 

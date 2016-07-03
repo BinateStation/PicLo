@@ -1,9 +1,10 @@
 package rkr.binatestation.piclo.adapters;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -17,7 +18,11 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.facebook.share.model.SharePhoto;
+import com.facebook.share.model.SharePhotoContent;
+import com.facebook.share.widget.ShareDialog;
 
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
@@ -29,7 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rkr.binatestation.piclo.R;
-import rkr.binatestation.piclo.activites.ImageFullScreenActivity;
+import rkr.binatestation.piclo.activities.ImageFullScreenActivity;
+import rkr.binatestation.piclo.fragments.MainContentFragment;
 import rkr.binatestation.piclo.models.PictureModel;
 import rkr.binatestation.piclo.network.VolleySingleTon;
 import rkr.binatestation.piclo.utils.Util;
@@ -40,11 +46,10 @@ import rkr.binatestation.piclo.utils.Util;
  */
 public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHolder> {
     List<PictureModel> pictureModelList = new ArrayList<>();
+    MainContentFragment thisObject;
 
-    Activity activity;
-
-    public PictureAdapter(Activity activity) {
-        this.activity = activity;
+    public PictureAdapter(MainContentFragment thisObject) {
+        this.thisObject = thisObject;
     }
 
     /**
@@ -104,7 +109,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         holder.fbShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                share(view.getContext(), VolleySingleTon.getDomainUrlForImage() + getItem(holder.getAdapterPosition()).getFile());
+                shareToFacebook(getBitMapFromImageView(holder.picture));
             }
         });
         holder.whatsAppShare.setOnClickListener(new View.OnClickListener() {
@@ -129,12 +134,24 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(holder.view, (int) holder.view.getX(), (int) holder.view.getY()
                         , holder.view.getWidth(), holder.view.getHeight());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    activity.startActivity(intent, options.toBundle());
+                    thisObject.startActivity(intent, options.toBundle());
                 } else {
-                    activity.startActivity(intent);
+                    thisObject.startActivity(intent);
                 }
             }
         });
+    }
+
+    public void shareToFacebook(Bitmap image) {
+        if (ShareDialog.canShow(SharePhotoContent.class)) {
+            SharePhoto photo = new SharePhoto.Builder()
+                    .setBitmap(image)
+                    .build();
+            SharePhotoContent content = new SharePhotoContent.Builder()
+                    .addPhoto(photo)
+                    .build();
+            ShareDialog.show(thisObject, content);
+        }
     }
 
     private void share(Context context, String url) {
@@ -144,6 +161,18 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         sendIntent.setType("text/plain");
         context.startActivity(sendIntent);
     }
+
+    private Bitmap getBitMapFromImageView(NetworkImageView networkImageView) {
+        ImageLoader.ImageContainer container = (ImageLoader.ImageContainer) networkImageView.getTag();
+        if (container != null) {
+            final Bitmap bitmap = container.getBitmap();
+            if (bitmap != null) {
+                return bitmap;
+            }
+        }
+        return ((BitmapDrawable) networkImageView.getDrawable()).getBitmap();
+    }
+
 
     @Override
     public int getItemCount() {

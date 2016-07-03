@@ -1,4 +1,4 @@
-package rkr.binatestation.piclo.activites;
+package rkr.binatestation.piclo.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;

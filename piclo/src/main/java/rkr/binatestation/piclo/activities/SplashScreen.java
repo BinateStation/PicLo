@@ -1,4 +1,4 @@
-package rkr.binatestation.piclo.activites;
+package rkr.binatestation.piclo.activities;
 
 import android.Manifest;
 import android.content.Intent;
@@ -14,6 +14,8 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,6 +34,8 @@ public class SplashScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(getApplication());
         Categories categoriesDB = new Categories(getContext());
         categoriesDB.open();
         if (categoriesDB.getAllRows().isEmpty()) {

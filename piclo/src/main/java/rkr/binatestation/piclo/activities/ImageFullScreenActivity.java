@@ -1,4 +1,4 @@
-package rkr.binatestation.piclo.activites;
+package rkr.binatestation.piclo.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

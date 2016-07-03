@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark"
-    tools:context="rkr.binatestation.piclo.activites.ImageFullScreenActivity">
+    tools:context="rkr.binatestation.piclo.activities.ImageFullScreenActivity">
 
     <rkr.binatestation.piclo.utils.ZoomableImageView
         android:id="@+id/PI_image"

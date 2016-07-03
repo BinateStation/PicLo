@@ -13,8 +13,12 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Light">
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+
         <activity
-            android:name=".activites.SplashScreen"
+            android:name=".activities.SplashScreen"
             android:theme="@style/AppTheme.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,22 +27,32 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activites.LoginActivity"
+            android:name=".activities.LoginActivity"
             android:label="@string/sign_in" />
         <activity
-            android:name=".activites.HomeActivity"
+            android:name=".activities.HomeActivity"
             android:label="@string/app_name" />
-        <activity android:name=".activites.UploadPicture" />
+        <activity android:name=".activities.UploadPicture" />
         <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
         <activity
-            android:name=".activites.ProfileActivity"
+            android:name=".activities.ProfileActivity"
             android:label="@string/profile"
             android:theme="@style/AppTheme.Light" />
         <activity
-            android:name=".activites.RegistrationActivity"
+            android:name=".activities.RegistrationActivity"
             android:label="@string/registration"
             android:theme="@style/AppTheme.Light" />
-        <activity android:name=".activites.ImageFullScreenActivity"></activity>
+        <activity android:name=".activities.ImageFullScreenActivity" />
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <provider
+            android:name="com.facebook.FacebookContentProvider"
+            android:authorities="com.facebook.app.FacebookContentProvider1712529009007134"
+            android:exported="true" />
     </application>
 
 </manifest>
