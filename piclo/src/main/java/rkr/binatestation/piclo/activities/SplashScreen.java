@@ -49,8 +49,10 @@ public class SplashScreen extends AppCompatActivity {
     }
 
     private void navigate() {
-        startActivity(new Intent(getContext(), HomeActivity.class));
-        finish();
+        if (isStoragePermissionGranted()) {
+            startActivity(new Intent(getContext(), HomeActivity.class));
+            finish();
+        }
     }
 
     private void getCategories() {
@@ -63,6 +65,7 @@ public class SplashScreen extends AppCompatActivity {
                     parseResponse(new JSONObject(response));
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    navigate();
                 }
             }
 
@@ -87,9 +90,7 @@ public class SplashScreen extends AppCompatActivity {
                             getSharedPreferences(getPackageName(), MODE_PRIVATE).edit().putString(Constants.KEY_CATEGORY_LAST_UPDATED_DATE,
                                     new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date())).apply();
                         }
-                        if (isStoragePermissionGranted()) {
-                            navigate();
-                        }
+                        navigate();
                     } else {
                         navigate();
                     }
@@ -153,9 +154,7 @@ public class SplashScreen extends AppCompatActivity {
         if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Log.v(tag, "Permission: " + permissions[0] + "was " + grantResults[0]);
             //resume tasks needing this permission
-            if (isStoragePermissionGranted()) {
-                navigate();
-            }
+            navigate();
         }
     }
 
