@@ -22,13 +22,13 @@ public class VolleySingleTon {
      * assignment of domain urls
      * the variable isLocal define if the project work in local domain or in live server domains
      */
-    private static final String domainUrl = "";
-    private static final String domainUrlForImage = "";
+    private static final String domainUrl = "http://www.piclo.in/app/";
+    private static final String domainUrlForImage = "http://www.piclo.in/images/gallery/";
 
     private static final String localDomainUrl = "http://binatestation.com/piclo/app/";
     private static final String localDomainUrlForImage = "http://binatestation.com/piclo/images/gallery/";
 
-    private static Boolean isLive = false;
+    private static Boolean isLive = true;
     /**
      * static variable for maintain single Volley queue
      */

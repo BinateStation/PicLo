@@ -1,6 +1,7 @@
 package rkr.binatestation.piclo.activities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -10,15 +11,23 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import rkr.binatestation.piclo.R;
 import rkr.binatestation.piclo.models.Categories;
@@ -36,14 +45,7 @@ public class SplashScreen extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(getApplication());
-        Categories categoriesDB = new Categories(getContext());
-        categoriesDB.open();
-        if (categoriesDB.getAllRows().isEmpty()) {
-            getCategories();
-        } else {
-            navigate();
-        }
-        categoriesDB.close();
+        getCategories();
     }
 
     private void navigate() {
@@ -52,12 +54,16 @@ public class SplashScreen extends AppCompatActivity {
     }
 
     private void getCategories() {
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
-                VolleySingleTon.getDomainUrl() + Constants.CATEGORIES, null, new Response.Listener<JSONObject>() {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                VolleySingleTon.getDomainUrl() + Constants.CATEGORIES, new Response.Listener<String>() {
             @Override
-            public void onResponse(JSONObject response) {
+            public void onResponse(String response) {
                 Log.d(tag, "Response payload :- " + response);
-                parseResponse(response);
+                try {
+                    parseResponse(new JSONObject(response));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             private void parseResponse(JSONObject response) {
@@ -68,6 +74,7 @@ public class SplashScreen extends AppCompatActivity {
                         if (dataArray != null) {
                             Categories categoriesDB = new Categories(getContext());
                             categoriesDB.open();
+                            categoriesDB.deleteAll();
                             categoriesDB.insert(new Categories("0", "All"));
                             for (int i = 0; i < dataArray.length(); i++) {
                                 JSONObject dataObject = dataArray.optJSONObject(i);
@@ -77,12 +84,14 @@ public class SplashScreen extends AppCompatActivity {
                                 ));
                             }
                             categoriesDB.close();
+                            getSharedPreferences(getPackageName(), MODE_PRIVATE).edit().putString(Constants.KEY_CATEGORY_LAST_UPDATED_DATE,
+                                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date())).apply();
                         }
                         if (isStoragePermissionGranted()) {
                             navigate();
                         }
                     } else {
-                        Util.showProgressOrError(getSupportFragmentManager(), R.id.ASS_contentLayout, 2, "SPLASH_SCREEN_ACTIVITY_ERROR");
+                        navigate();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -98,9 +107,26 @@ public class SplashScreen extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        });
-        Log.i(tag, "Request url  :- " + jsonObjectRequest.getUrl());
-        VolleySingleTon.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("date", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE)
+                        .getString(Constants.KEY_CATEGORY_LAST_UPDATED_DATE, ""));
+
+                Log.d(tag, getUrl() + " : Request payload :- " + params.toString());
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+        Log.i(tag, "Request url  :- " + stringRequest.getUrl());
+        VolleySingleTon.getInstance(getContext()).addToRequestQueue(stringRequest);
     }
 
     public boolean isStoragePermissionGranted() {
