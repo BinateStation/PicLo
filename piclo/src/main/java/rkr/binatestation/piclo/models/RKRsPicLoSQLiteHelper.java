@@ -7,11 +7,11 @@ import android.util.Log;
 
 public class RKRsPicLoSQLiteHelper extends SQLiteOpenHelper {
 
+    private static int DB_VERSION = 1;
     Context context;
 
     public RKRsPicLoSQLiteHelper(Context context) throws Exception {
-        super(context, context.getPackageName(), null, context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), 0).versionCode);
+        super(context, context.getPackageName(), null, DB_VERSION);
         this.context = context;
     }
 

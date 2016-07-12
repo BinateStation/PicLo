@@ -195,6 +195,9 @@ public class UploadPicture extends AppCompatActivity {
         if (TextUtils.isEmpty(title.getText().toString())) {
             title.setError("Please provide a title..!");
             title.requestFocus();
+        } else if (category.getSelectedItemPosition() == 0) {
+            Util.showAlert(getContext(), "Alert", "Please select a category..!", false);
+            category.requestFocus();
         } else if (TextUtils.isEmpty(courtesy.getText().toString())) {
             courtesy.setError("Please specify the courtesy of this image..!");
             courtesy.requestFocus();
@@ -211,6 +214,9 @@ public class UploadPicture extends AppCompatActivity {
         categoriesDB.open();
         categoriesArrayAdapter.addAll(categoriesDB.getAllRows());
         categoriesDB.close();
+        if (categoriesArrayAdapter.getCount() > 0) {
+            categoriesArrayAdapter.getItem(0).setCategoryName("Select a category..!");
+        }
         categoriesArrayAdapter.notifyDataSetChanged();
     }
 

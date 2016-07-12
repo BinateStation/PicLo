@@ -112,25 +112,30 @@ public class RegistrationActivity extends AppCompatActivity {
 
             private void parseResponse(JSONObject response) {
                 try {
-                    if (response.has("status") && response.optBoolean("status")) {
-                        Log.i(tag, response.optString("message"));
-                        JSONObject data = response.optJSONObject("data");
-                        if (data != null) {
-                            getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
-                                    .putString(Constants.KEY_USER_ID, data.optString("userId"))
-                                    .putString(Constants.KEY_USER_FULL_NAME, data.optString("fullName"))
-                                    .putString(Constants.KEY_USER_EMAIL, data.optString("email"))
-                                    .putString(Constants.KEY_MOBILE, data.optString("mobile"))
-                                    .putString(Constants.KEY_USER_NAME, data.optString("userName"))
-                                    .putBoolean(Constants.KEY_IS_LOGGED_IN, true)
-                                    .apply();
-                            onBackPressed();
+                    if (response.has("status")) {
+                        if (response.optBoolean("status")) {
+                            Log.i(tag, response.optString("message"));
+                            JSONObject data = response.optJSONObject("data");
+                            if (data != null) {
+                                getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
+                                        .putString(Constants.KEY_USER_ID, data.optString("userId"))
+                                        .putString(Constants.KEY_USER_FULL_NAME, data.optString("fullName"))
+                                        .putString(Constants.KEY_USER_EMAIL, data.optString("email"))
+                                        .putString(Constants.KEY_MOBILE, data.optString("mobile"))
+                                        .putString(Constants.KEY_USER_NAME, data.optString("userName"))
+                                        .putBoolean(Constants.KEY_IS_LOGGED_IN, true)
+                                        .apply();
+                                onBackPressed();
+                            }
+                        } else {
+                            Util.showAlert(getContext(), "Alert", response.optString("message"), false);
                         }
                     } else {
                         Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 2, "REGISTRATION_ACTIVITY_ERROR");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    Util.showProgressOrError(getSupportFragmentManager(), R.id.AR_contentLayout, 2, "REGISTRATION_ACTIVITY_ERROR");
                 }
             }
         }, new Response.ErrorListener() {

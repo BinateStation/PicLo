@@ -19,7 +19,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -115,6 +114,7 @@ public class MainContentFragment extends Fragment {
         return view;
     }
 
+
     private void getPictures(final PictureAdapter pictureAdapter) {
         swipeRefreshLayout.setRefreshing(true);
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
@@ -122,11 +122,11 @@ public class MainContentFragment extends Fragment {
             @Override
             public void onResponse(String response) {
                 Log.d(tag, "Response payload :- " + response);
-                swipeRefreshLayout.setRefreshing(false);
-                Util.hideProgressOrError(getChildFragmentManager(), "MAIN_CONTENT_FRAGMENT_PROGRESS");
                 try {
+                    swipeRefreshLayout.setRefreshing(false);
+                    Util.hideProgressOrError(getChildFragmentManager(), "MAIN_CONTENT_FRAGMENT_PROGRESS");
                     parseResponse(new JSONObject(response));
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
