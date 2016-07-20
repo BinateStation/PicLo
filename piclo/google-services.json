@@ -1,0 +1,35 @@
+{
+  "project_info": {
+    "project_number": "1054989694959",
+    "project_id": "piclo-68dad"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1054989694959:android:697d3608d240137c",
+        "android_client_info": {
+          "package_name": "rkr.binatestation.piclo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCERkdc6ma7Yr_Z3IKL9Q9LB_nDwfu2Umk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

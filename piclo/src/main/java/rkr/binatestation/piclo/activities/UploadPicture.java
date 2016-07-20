@@ -34,7 +34,6 @@ import android.widget.Spinner;
 import com.alexbbb.uploadservice.AbstractUploadServiceReceiver;
 import com.alexbbb.uploadservice.ContentType;
 import com.alexbbb.uploadservice.MultipartUploadRequest;
-import com.soundcloud.android.crop.Crop;
 
 import org.json.JSONObject;
 
@@ -328,10 +327,6 @@ public class UploadPicture extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         try {
-            if (requestCode == Crop.REQUEST_CROP && resultCode == RESULT_OK) {
-                Uri result = Crop.getOutput(data);
-                setImageView(result);
-            }
             if (resultCode == Activity.RESULT_OK) {
                 if (requestCode == REQUEST_CAMERA) {
                     Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
@@ -350,9 +345,7 @@ public class UploadPicture extends AppCompatActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-//                    Uri destinationURI = Uri.fromFile(new File(Util.getCaptureImagePath(), "IMG_CROPPED" + System.currentTimeMillis() + ".jpg"));
                     Uri source = Uri.fromFile(destination);
-//                    Crop.of(source, destinationURI).withAspect(5, 3).start(this);
                     setImageView(source);
                 } else if (requestCode == SELECT_FILE) {
                     Uri selectedImageUri = data.getData();
@@ -376,13 +369,9 @@ public class UploadPicture extends AppCompatActivity {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-//                        Uri destinationURI = Uri.fromFile(new File(Util.getCaptureImagePath(), "IMG_CROPPED" + System.currentTimeMillis() + ".jpg"));
                         Uri source = Uri.fromFile(destination);
-//                        Crop.of(source, destinationURI).withAspect(5, 3).start(this);
                         setImageView(source);
                     } else {
-//                        Uri destinationURI = Uri.fromFile(new File(Util.getCaptureImagePath(), "IMG_CROPPED" + System.currentTimeMillis() + ".jpg"));
-//                        Crop.of(selectedImageUri, destinationURI).withAspect(5, 3).start(this);
                         setImageView(selectedImageUri);
                     }
                 }
@@ -504,11 +493,9 @@ public class UploadPicture extends AppCompatActivity {
                     mProgressDialog.dismiss();
                 }
                 String imagePath = Util.getCaptureImagePath() + "/profile.jpg";
-//                Uri destinationURI = Uri.fromFile(new File(Util.getCaptureImagePath(), "IMG_CROPPED" + System.currentTimeMillis() + ".jpg"));
                 File destination = new File(imagePath);
                 if (destination.exists()) {
                     Uri source = Uri.fromFile(destination);
-//                    Crop.of(source, destinationURI).withAspect(5, 3).start(getContext());
                     setImageView(source);
                 }
             }
