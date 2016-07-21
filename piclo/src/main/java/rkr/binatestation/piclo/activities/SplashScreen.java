@@ -45,7 +45,9 @@ public class SplashScreen extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(getApplication());
-        getCategories();
+        if (isStoragePermissionGranted()) {
+            getCategories();
+        }
     }
 
     private void navigate() {
@@ -133,13 +135,13 @@ public class SplashScreen extends AppCompatActivity {
     public boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
+                    == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
                 Log.v(tag, "Permission is granted");
                 return true;
             } else {
 
                 Log.v(tag, "Permission is revoked");
-                ActivityCompat.requestPermissions(getContext(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                ActivityCompat.requestPermissions(getContext(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE}, 1);
                 return false;
             }
         } else { //permission is automatically granted on sdk<23 upon installation
@@ -154,7 +156,9 @@ public class SplashScreen extends AppCompatActivity {
         if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Log.v(tag, "Permission: " + permissions[0] + "was " + grantResults[0]);
             //resume tasks needing this permission
-            navigate();
+            getCategories();
+        } else {
+            Util.showAlert(getContext(), "Alert", "Permission for storage and phone state is just for saving your piclo, please allow it.", true);
         }
     }
 

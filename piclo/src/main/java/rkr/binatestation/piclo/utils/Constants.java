@@ -21,6 +21,7 @@ public final class Constants {
     public static final String PROFILE = "profile";
     public static final String UPDATE = "update";
     public static final String CHANGE_PASSWORD = "changepassword";
+    public static final String MOBILE_REGISTER = "mobile/register";
     /**
      ***********************************************************************************************
      */

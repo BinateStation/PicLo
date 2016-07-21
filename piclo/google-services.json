@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "1054989694959",
-    "project_id": "piclo-68dad"
+    "firebase_url": "https://piclo-68dad.firebaseio.com",
+    "project_id": "piclo-68dad",
+    "storage_bucket": "piclo-68dad.appspot.com"
   },
   "client": [
     {
@@ -11,7 +13,24 @@
           "package_name": "rkr.binatestation.piclo"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1054989694959-4do0anjaq6ar2e6rq8sl13jbq6gi3r9k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "rkr.binatestation.piclo",
+            "certificate_hash": "A6398017621F56E1332CB75C3090F5A1AE03D5C9"
+          }
+        },
+        {
+          "client_id": "1054989694959-tlhln88sep0huq3sjg6kt7iob92q30h3.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "1054989694959-22el41vfld81rrp7jp920s7jlr7msm1j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCERkdc6ma7Yr_Z3IKL9Q9LB_nDwfu2Umk"
@@ -26,7 +45,7 @@
           "other_platform_oauth_client": []
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }
