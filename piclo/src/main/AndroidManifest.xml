@@ -24,8 +24,16 @@
             android:theme="@style/AppTheme.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://www.piclo.in/” -->
+                <data
+                    android:host="www.piclo.in"
+                    android:scheme="http" />
+
             </intent-filter>
         </activity>
         <activity
