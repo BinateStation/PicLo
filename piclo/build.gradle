@@ -1,5 +1,13 @@
 apply plugin: 'com.android.application'
 android {
+    signingConfigs {
+        config {
+            keyAlias 'piclo'
+            keyPassword 'binatestation@123'
+            storeFile file('G:/RKR/MyAndroidFiles/WorkSpace_6/PicLo/keyStore/piclo_keystore.jks')
+            storePassword 'binatestation@123'
+        }
+    }
     compileSdkVersion 24
     buildToolsVersion '24.0.1'
     defaultConfig {
