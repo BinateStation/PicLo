@@ -34,10 +34,10 @@ import rkr.binatestation.piclo.models.Category;
 import rkr.binatestation.piclo.utils.Constants;
 
 import static rkr.binatestation.piclo.models.Category.getCategories;
+import static rkr.binatestation.piclo.utils.Constants.CONTENT_LOADER_CATEGORIES;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor> {
 
-    public static final int CONTENT_LOADER_TAB = 1;
     private static final String TAG = "HomeActivity";
     View header;
     ViewPager mViewPager;
@@ -157,7 +157,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private void initTabLoader() {
         Log.d(TAG, "initTabLoader() called");
-        getSupportLoaderManager().initLoader(CONTENT_LOADER_TAB, null, this);
+        getSupportLoaderManager().initLoader(CONTENT_LOADER_CATEGORIES, null, this);
     }
 
     private void setupViewPager(ViewPager viewPager, List<Category> categories) {
@@ -253,7 +253,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.d(TAG, "onCreateLoader() called with: id = [" + id + "], args = [" + args + "]");
         switch (id) {
-            case CONTENT_LOADER_TAB:
+            case CONTENT_LOADER_CATEGORIES:
                 return new CursorLoader(
                         getContext(),
                         PicloContract.CategoriesEntry.CONTENT_URI,
@@ -271,7 +271,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         Log.d(TAG, "onLoadFinished() called with: loader = [" + loader + "], data = [" + data + "]");
         if (loader != null) {
             switch (loader.getId()) {
-                case CONTENT_LOADER_TAB:
+                case CONTENT_LOADER_CATEGORIES:
                     setupViewPager(mViewPager, getCategories(data));
                     break;
             }

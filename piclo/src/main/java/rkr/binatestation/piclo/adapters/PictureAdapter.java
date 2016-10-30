@@ -49,9 +49,10 @@ import rkr.binatestation.piclo.utils.Util;
  * PictureAdapter.
  */
 public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHolder> {
-    private static final String tag = PictureAdapter.class.getName();
-    List<PictureModel> pictureModelList = new ArrayList<>();
-    MainContentFragment thisObject;
+    private static final String TAG = "PictureAdapter";
+
+    private List<PictureModel> pictureModelList = new ArrayList<>();
+    private MainContentFragment thisObject;
 
     public PictureAdapter(MainContentFragment thisObject) {
         this.thisObject = thisObject;
@@ -153,25 +154,25 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         });
     }
 
-    public boolean isStoragePermissionGranted() {
+    private boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (thisObject.getActivity().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(tag, "Permission is granted");
+                Log.v(TAG, "Permission is granted");
                 return true;
             } else {
 
-                Log.v(tag, "Permission is revoked");
+                Log.v(TAG, "Permission is revoked");
                 ActivityCompat.requestPermissions(thisObject.getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
             }
         } else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(tag, "Permission is granted");
+            Log.v(TAG, "Permission is granted");
             return true;
         }
     }
 
-    public void shareToFacebook(Bitmap image) {
+    private void shareToFacebook(Bitmap image) {
         if (ShareDialog.canShow(SharePhotoContent.class)) {
             SharePhoto photo = new SharePhoto.Builder()
                     .setBitmap(image)

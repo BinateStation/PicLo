@@ -10,6 +10,14 @@ public final class Constants {
      * The Constant that are used in volley for socket timeout
      */
     public static final int socketTimeout = 30000;//30 seconds - change to what you want
+
+
+    /**
+     * Content loader id
+     */
+    public static final int CONTENT_LOADER_CATEGORIES = 1;
+    public static final int CONTENT_LOADER_PICS = 2;
+
     /**
      * The Constants that are used in server APIs
      */
@@ -49,4 +57,21 @@ public final class Constants {
     public static final String KEY_JSON_DATA = "data";
     public static final String KEY_JSON_CATEGORY_ID = "categoryId";
     public static final String KEY_JSON_CATEGORY_NAME = "categoryName";
+    public static final String KEY_JSON_TITLE = "title";
+    public static final String KEY_JSON_FILE = "file";
+    public static final String KEY_JSON_IMAGE_ID = "imageId";
+    public static final String KEY_JSON_USER_ID = "userId";
+    public static final String KEY_JSON_COURTESY = "courtesy";
+    public static final String KEY_JSON_FULL_NAME = "fullName";
+
+    /**
+     ***********************************************************************************************
+     */
+
+    /**
+     * The Constants used as Bundle KEY
+     */
+    public static final String KEY_CATEGORY_ID = "category_id";
+    public static final String KEY_PARENT_ACTIVITY = "parent_activity";
+    public static final String KEY_PICS_LIMIT = "pics_limit";
 }

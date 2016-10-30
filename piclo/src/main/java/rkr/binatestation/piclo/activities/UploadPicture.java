@@ -60,9 +60,9 @@ import rkr.binatestation.piclo.utils.Constants;
 import rkr.binatestation.piclo.utils.Util;
 
 import static rkr.binatestation.piclo.models.Category.getCategories;
+import static rkr.binatestation.piclo.utils.Constants.CONTENT_LOADER_CATEGORIES;
 
 public class UploadPicture extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-    public static final int CONTENT_LOADER_CATEGORIES = 1;
     private static final String TAG = "UploadPicture";
     FloatingActionButton upload;
     TextInputEditText chooseFile, title, courtesy;

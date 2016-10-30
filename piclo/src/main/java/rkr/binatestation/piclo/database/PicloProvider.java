@@ -52,6 +52,7 @@ public class PicloProvider extends ContentProvider {
         return false;
     }
 
+
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {

@@ -91,11 +91,11 @@ public final class PicloContract {
         public static final String SQL_CREATE_PICTURES_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
                 _ID + " INTEGER PRIMARY KEY," +
                 COLUMN_TITLE + " TEXT , " +
-                COLUMN_FILE + " TEXT , " +
+                COLUMN_FILE + " TEXT UNIQUE , " +
                 COLUMN_LIKE_COUNT + " TEXT , " +
                 COLUMN_IS_LIKED + " TEXT , " +
                 COLUMN_UPDATED_DATE + " TEXT , " +
-                COLUMN_IMAGE_ID + " TEXT , " +
+                COLUMN_IMAGE_ID + " TEXT UNIQUE , " +
                 COLUMN_USER_ID + " TEXT , " +
                 COLUMN_CATEGORY_ID + " TEXT , " +
                 COLUMN_COURTESY + " TEXT , " +
