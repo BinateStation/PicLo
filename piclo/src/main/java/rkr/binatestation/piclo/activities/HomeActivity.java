@@ -2,10 +2,15 @@ package rkr.binatestation.piclo.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -13,19 +18,27 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.List;
+
 import rkr.binatestation.piclo.R;
 import rkr.binatestation.piclo.adapters.ViewPagerAdapter;
+import rkr.binatestation.piclo.database.PicloContract;
 import rkr.binatestation.piclo.fragments.MainContentFragment;
-import rkr.binatestation.piclo.models.Categories;
+import rkr.binatestation.piclo.models.Category;
 import rkr.binatestation.piclo.utils.Constants;
 
-public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+import static rkr.binatestation.piclo.models.Category.getCategories;
+
+public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor> {
+
+    public static final int CONTENT_LOADER_TAB = 1;
+    private static final String TAG = "HomeActivity";
     View header;
     ViewPager mViewPager;
 
@@ -66,16 +79,17 @@ public class HomeActivity extends AppCompatActivity
         }
 
         mViewPager = (ViewPager) findViewById(R.id.CH_homeViewPager);
-        setupViewPager(mViewPager);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.ABH_TabLayout);
         assert tabLayout != null;
         tabLayout.setupWithViewPager(mViewPager, true);
 
+        initTabLoader();
 
     }
 
     private void setNavigationHeader() {
+        Log.d(TAG, "setNavigationHeader() called");
         TextView userName = (TextView) header.findViewById(R.id.NHH_userName);
         TextView email = (TextView) header.findViewById(R.id.NHH_userEmail);
         if (header != null && getSharedPreferences(getPackageName(), MODE_PRIVATE).getBoolean(Constants.KEY_IS_LOGGED_IN, false)) {
@@ -88,6 +102,7 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void alertForLoggingIn() {
+        Log.d(TAG, "alertForLoggingIn() called");
         try {
             new AlertDialog.Builder(getContext())
                     .setTitle("Alert")
@@ -111,6 +126,7 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void alertForLogout(final MenuItem item) {
+        Log.d(TAG, "alertForLogout() called with: item = [" + item + "]");
         try {
             new AlertDialog.Builder(getContext())
                     .setTitle("Alert")
@@ -139,14 +155,17 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
-    private void setupViewPager(ViewPager viewPager) {
+    private void initTabLoader() {
+        Log.d(TAG, "initTabLoader() called");
+        getSupportLoaderManager().initLoader(CONTENT_LOADER_TAB, null, this);
+    }
+
+    private void setupViewPager(ViewPager viewPager, List<Category> categories) {
+        Log.d(TAG, "setupViewPager() called with: viewPager = [" + viewPager + "], categories = [" + categories + "]");
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        Categories categoriesDB = new Categories(getContext());
-        categoriesDB.open();
-        for (Categories categories : categoriesDB.getAllRows()) {
-            adapter.addFrag(MainContentFragment.newInstance(categories.getCategoryId(), "H"), categories.getCategoryName());
+        for (Category category : categories) {
+            adapter.addFrag(MainContentFragment.newInstance(category.getCategoryId(), "H"), category.getCategoryName());
         }
-        categoriesDB.close();
         viewPager.setAdapter(adapter);
     }
 
@@ -204,7 +223,7 @@ public class HomeActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
 
         switch (item.getItemId()) {
@@ -228,5 +247,40 @@ public class HomeActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         }
         return true;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.d(TAG, "onCreateLoader() called with: id = [" + id + "], args = [" + args + "]");
+        switch (id) {
+            case CONTENT_LOADER_TAB:
+                return new CursorLoader(
+                        getContext(),
+                        PicloContract.CategoriesEntry.CONTENT_URI,
+                        null,
+                        null,
+                        null,
+                        null
+                );
+        }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "onLoadFinished() called with: loader = [" + loader + "], data = [" + data + "]");
+        if (loader != null) {
+            switch (loader.getId()) {
+                case CONTENT_LOADER_TAB:
+                    setupViewPager(mViewPager, getCategories(data));
+                    break;
+            }
+        }
+    }
+
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

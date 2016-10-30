@@ -8,17 +8,17 @@ import java.util.Date;
  * PictureModel.
  */
 public class PictureModel implements Serializable {
-    String title;
-    String file;
-    long likeCount;
-    boolean isLiked;
-    Date updatedDate;
-    String imageId;
-    String userId;
-    String categoryId;
-    String courtesy;
-    String categoryName;
-    String fullName;
+    private String title;
+    private String file;
+    private long likeCount;
+    private boolean isLiked;
+    private Date updatedDate;
+    private String imageId;
+    private String userId;
+    private String categoryId;
+    private String courtesy;
+    private String categoryName;
+    private String fullName;
 
     public PictureModel(String title, String file, Date updatedDate, String imageId, String userId, String categoryId, String courtesy, String categoryName, String fullName) {
         this.title = title;

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -18,6 +19,9 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -46,30 +50,35 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 
 import rkr.binatestation.piclo.R;
-import rkr.binatestation.piclo.models.Categories;
+import rkr.binatestation.piclo.database.PicloContract;
+import rkr.binatestation.piclo.models.Category;
 import rkr.binatestation.piclo.network.VolleySingleTon;
 import rkr.binatestation.piclo.utils.Constants;
 import rkr.binatestation.piclo.utils.Util;
 
-public class UploadPicture extends AppCompatActivity {
-    private static final String tag = UploadPicture.class.getSimpleName();
+import static rkr.binatestation.piclo.models.Category.getCategories;
+
+public class UploadPicture extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+    public static final int CONTENT_LOADER_CATEGORIES = 1;
+    private static final String TAG = "UploadPicture";
     FloatingActionButton upload;
     TextInputEditText chooseFile, title, courtesy;
-    Spinner category;
+    Spinner categorySpinner;
     String selectedImagePath = "";
     Uri uri;
     ImageView uploadPicture;
     Integer REQUEST_CAMERA = 1;
     Integer SELECT_FILE = 2;
-    ArrayAdapter<Categories> categoriesArrayAdapter;
+    ArrayAdapter<Category> categoriesArrayAdapter;
     private ProgressDialog mProgressDialog;
     private final AbstractUploadServiceReceiver uploadReceiver = new AbstractUploadServiceReceiver() {
 
         @Override
         public void onProgress(String uploadId, int progress) {
-            Log.i(tag, "The progress of the upload with ID " + uploadId + " is: " + progress);
+            Log.i(TAG, "The progress of the upload with ID " + uploadId + " is: " + progress);
             try {
                 if (mProgressDialog != null && !mProgressDialog.isShowing()) {
                     showProgressDialog(true, uploadId, "Image Uploading...");
@@ -82,7 +91,7 @@ public class UploadPicture extends AppCompatActivity {
 
         @Override
         public void onProgress(final String uploadId, final long uploadedBytes, final long totalBytes) {
-            Log.i(tag, "Upload with ID " + uploadId + " uploaded bytes: " + uploadedBytes
+            Log.i(TAG, "Upload with ID " + uploadId + " uploaded bytes: " + uploadedBytes
                     + ", total: " + totalBytes);
         }
 
@@ -93,23 +102,23 @@ public class UploadPicture extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Log.e(tag, "Error in upload with ID: " + uploadId + ". "
+            Log.e(TAG, "Error in upload with ID: " + uploadId + ". "
                     + exception.getLocalizedMessage(), exception);
         }
 
         @Override
         public void onCompleted(String uploadId, int serverResponseCode, String serverResponseMessage) {
-            Log.i(tag, "Upload with ID " + uploadId
+            Log.i(TAG, "Upload with ID " + uploadId
                     + " has been completed with HTTP " + serverResponseCode
                     + ". Response from server: " + serverResponseMessage);
             try {
                 showProgressDialog(false, "", "");
                 JSONObject response = new JSONObject(serverResponseMessage);
                 if (response.has("status") && response.optBoolean("status")) {
-                    Log.i(tag, response.optString("message"));
+                    Log.i(TAG, response.optString("message"));
                     Util.alert(getContext(), "Alert", response.optString("message"), true);
                 } else {
-                    Log.e(tag, response.optString("message"));
+                    Log.e(TAG, response.optString("message"));
                     Util.showProgressOrError(getSupportFragmentManager(), R.id.AUP_contentLayout, 2, "UPLOAD_ACTIVITY_ERROR");
                 }
             } catch (Exception e) {
@@ -177,26 +186,31 @@ public class UploadPicture extends AppCompatActivity {
         });
 
         title = (TextInputEditText) findViewById(R.id.AUP_title);
-        category = (Spinner) findViewById(R.id.AUP_category);
+        categorySpinner = (Spinner) findViewById(R.id.AUP_category);
         courtesy = (TextInputEditText) findViewById(R.id.AUP_courtesy);
 
         categoriesArrayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item);
         categoriesArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        category.setAdapter(categoriesArrayAdapter);
-        setCategory();
+        categorySpinner.setAdapter(categoriesArrayAdapter);
+        initCategoriesLoader();
 
         if (savedInstanceState != null) {
             setImageView((Uri) savedInstanceState.getParcelable("image_uri"));
         }
     }
 
+    private void initCategoriesLoader() {
+        Log.d(TAG, "initCategoriesLoader() called");
+        getSupportLoaderManager().initLoader(CONTENT_LOADER_CATEGORIES, null, this);
+    }
+
     private void validateInputs() {
         if (TextUtils.isEmpty(title.getText().toString())) {
             title.setError("Please provide a title..!");
             title.requestFocus();
-        } else if (category.getSelectedItemPosition() == 0) {
-            Util.showAlert(getContext(), "Alert", "Please select a category..!", false);
-            category.requestFocus();
+        } else if (categorySpinner.getSelectedItemPosition() == 0) {
+            Util.showAlert(getContext(), "Alert", "Please select a categorySpinner..!", false);
+            categorySpinner.requestFocus();
         } else if (TextUtils.isEmpty(courtesy.getText().toString())) {
             courtesy.setError("Please specify the courtesy of this image..!");
             courtesy.requestFocus();
@@ -208,13 +222,13 @@ public class UploadPicture extends AppCompatActivity {
         }
     }
 
-    private void setCategory() {
-        Categories categoriesDB = new Categories(getContext());
-        categoriesDB.open();
-        categoriesArrayAdapter.addAll(categoriesDB.getAllRows());
-        categoriesDB.close();
+    private void setCategorySpinner(List<Category> categories) {
+        categoriesArrayAdapter.addAll(categories);
         if (categoriesArrayAdapter.getCount() > 0) {
-            categoriesArrayAdapter.getItem(0).setCategoryName("Select a category..!");
+            Category category = categoriesArrayAdapter.getItem(0);
+            if (category != null) {
+                category.setCategoryName("Select a categorySpinner..!");
+            }
         }
         categoriesArrayAdapter.notifyDataSetChanged();
     }
@@ -223,16 +237,16 @@ public class UploadPicture extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(tag, "Permission is granted");
+                Log.v(TAG, "Permission is granted");
                 return true;
             } else {
 
-                Log.v(tag, "Permission is revoked");
+                Log.v(TAG, "Permission is revoked");
                 ActivityCompat.requestPermissions(getContext(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
             }
         } else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(tag, "Permission is granted");
+            Log.v(TAG, "Permission is granted");
             return true;
         }
     }
@@ -268,7 +282,7 @@ public class UploadPicture extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Log.v(tag, "Permission: " + permissions[0] + "was " + grantResults[0]);
+            Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0]);
             //resume tasks needing this permission
             if (isStoragePermissionGranted()) {
                 selectImage();
@@ -305,7 +319,7 @@ public class UploadPicture extends AppCompatActivity {
             File file = new File(result.getPath());
             chooseFile.setText(file.getName());
             selectedImagePath = Util.getRealPathFromURI(getContext(), result);
-            Log.i(tag, selectedImagePath);
+            Log.i(TAG, selectedImagePath);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -512,7 +526,10 @@ public class UploadPicture extends AppCompatActivity {
                 request.addParameter("userId", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, ""));
                 request.addParameter("title", title.getText().toString().trim());
                 request.addParameter("courtesy", courtesy.getText().toString().trim());
-                request.addParameter("category", categoriesArrayAdapter.getItem(category.getSelectedItemPosition()).getCategoryId());
+                Category category = categoriesArrayAdapter.getItem(categorySpinner.getSelectedItemPosition());
+                if (category != null) {
+                    request.addParameter("categorySpinner", category.getCategoryId());
+                }
 
                 //configure the notification
                 request.setNotificationConfig(R.mipmap.ic_launcher,
@@ -530,7 +547,7 @@ public class UploadPicture extends AppCompatActivity {
                 request.setMaxRetries(2);
 
                 try {
-                    Log.i(tag, "Request :- " + request.toString());
+                    Log.i(TAG, "Request :- " + request.toString());
                     request.startUpload();
                 } catch (Exception exc) {
                     exc.printStackTrace();
@@ -557,4 +574,35 @@ public class UploadPicture extends AppCompatActivity {
         uploadReceiver.unregister(getContext());
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case CONTENT_LOADER_CATEGORIES:
+                return new CursorLoader(
+                        getContext(),
+                        PicloContract.CategoriesEntry.CONTENT_URI,
+                        null,
+                        null,
+                        null,
+                        null
+                );
+        }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (loader != null) {
+            switch (loader.getId()) {
+                case CONTENT_LOADER_CATEGORIES:
+                    setCategorySpinner(getCategories(data));
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
 }

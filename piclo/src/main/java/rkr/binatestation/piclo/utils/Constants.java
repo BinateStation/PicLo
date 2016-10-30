@@ -41,4 +41,12 @@ public final class Constants {
      ***********************************************************************************************
      */
 
+    /**
+     * The Constants used as JSON KEY
+     */
+    public static final String KEY_JSON_STATUS = "status";
+    public static final String KEY_JSON_MESSAGE = "message";
+    public static final String KEY_JSON_DATA = "data";
+    public static final String KEY_JSON_CATEGORY_ID = "categoryId";
+    public static final String KEY_JSON_CATEGORY_NAME = "categoryName";
 }

@@ -1,14 +1,17 @@
 package rkr.binatestation.piclo.activities;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
@@ -30,7 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import rkr.binatestation.piclo.R;
-import rkr.binatestation.piclo.models.Categories;
+import rkr.binatestation.piclo.database.PicloContract;
 import rkr.binatestation.piclo.network.VolleySingleTon;
 import rkr.binatestation.piclo.utils.Constants;
 import rkr.binatestation.piclo.utils.Util;
@@ -73,26 +76,14 @@ public class SplashScreen extends AppCompatActivity {
 
             private void parseResponse(JSONObject response) {
                 try {
-                    if (response.has("status") && response.optBoolean("status")) {
-                        Log.i(tag, response.optString("message"));
-                        JSONArray dataArray = response.optJSONArray("data");
-                        if (dataArray != null) {
-                            Categories categoriesDB = new Categories(getContext());
-                            categoriesDB.open();
-                            categoriesDB.deleteAll();
-                            categoriesDB.insert(new Categories("0", "All"));
-                            for (int i = 0; i < dataArray.length(); i++) {
-                                JSONObject dataObject = dataArray.optJSONObject(i);
-                                categoriesDB.insert(new Categories(
-                                        dataObject.optString("categoryId"),
-                                        dataObject.optString("categoryName")
-                                ));
-                            }
-                            categoriesDB.close();
-                            getSharedPreferences(getPackageName(), MODE_PRIVATE).edit().putString(Constants.KEY_CATEGORY_LAST_UPDATED_DATE,
-                                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date())).apply();
+                    if (response.has(Constants.KEY_JSON_STATUS) && response.optBoolean(Constants.KEY_JSON_STATUS)) {
+                        Log.i(tag, response.optString(Constants.KEY_JSON_MESSAGE));
+                        JSONArray dataArray = response.optJSONArray(Constants.KEY_JSON_DATA);
+                        if (dataArray != null && dataArray.length() > 0) {
+                            saveCategoriesInToDB(dataArray);
+                        } else {
+                            navigate();
                         }
-                        navigate();
                     } else {
                         navigate();
                     }
@@ -103,19 +94,18 @@ public class SplashScreen extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                try {
-                    Log.e(tag, "Error :- " + error.toString());
-                    Util.showProgressOrError(getSupportFragmentManager(), R.id.ASS_contentLayout, 2, "SPLASH_SCREEN_ACTIVITY_ERROR");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                Log.e(tag, "Error :- " + error.toString());
+                navigate();
             }
         }) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("date", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE)
-                        .getString(Constants.KEY_CATEGORY_LAST_UPDATED_DATE, ""));
+                String date = getSharedPreferences(getPackageName(), Context.MODE_PRIVATE)
+                        .getString(Constants.KEY_CATEGORY_LAST_UPDATED_DATE, "");
+                if (!TextUtils.isEmpty(date)) {
+                    params.put("date", date);
+                }
 
                 Log.d(tag, getUrl() + " : Request payload :- " + params.toString());
                 return params;
@@ -130,6 +120,41 @@ public class SplashScreen extends AppCompatActivity {
         };
         Log.i(tag, "Request url  :- " + stringRequest.getUrl());
         VolleySingleTon.getInstance(getContext()).addToRequestQueue(stringRequest);
+    }
+
+    private void saveCategoriesInToDB(final JSONArray dataArray) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                getContentResolver().delete(PicloContract.CategoriesEntry.CONTENT_URI, null, null);
+                getContentResolver().bulkInsert(PicloContract.CategoriesEntry.CONTENT_URI, getContentValues(dataArray));
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                getSharedPreferences(getPackageName(), MODE_PRIVATE).edit()
+                        .putString(Constants.KEY_CATEGORY_LAST_UPDATED_DATE,
+                                new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date())).apply();
+                navigate();
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private ContentValues[] getContentValues(JSONArray dataArray) {
+        if (dataArray != null) {
+            ContentValues[] contentValues = new ContentValues[dataArray.length()];
+            for (int i = 0; i < dataArray.length(); i++) {
+                JSONObject dataObject = dataArray.optJSONObject(i);
+                ContentValues values = new ContentValues();
+                values.put(PicloContract.CategoriesEntry.COLUMN_CATEGORY_ID, dataObject.optString(Constants.KEY_JSON_CATEGORY_ID));
+                values.put(PicloContract.CategoriesEntry.COLUMN_CATEGORY_NAME, dataObject.optString(Constants.KEY_JSON_CATEGORY_NAME));
+                contentValues[i] = values;
+            }
+            return contentValues;
+        }
+        return new ContentValues[0];
     }
 
     public boolean isStoragePermissionGranted() {
