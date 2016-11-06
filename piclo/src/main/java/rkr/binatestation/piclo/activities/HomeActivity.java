@@ -260,7 +260,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         null,
                         null,
                         null,
-                        null
+                        PicloContract.CategoriesEntry.COLUMN_CATEGORY_ID
                 );
         }
         return null;

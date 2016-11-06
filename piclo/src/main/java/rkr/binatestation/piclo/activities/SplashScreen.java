@@ -144,13 +144,19 @@ public class SplashScreen extends AppCompatActivity {
 
     private ContentValues[] getContentValues(JSONArray dataArray) {
         if (dataArray != null) {
-            ContentValues[] contentValues = new ContentValues[dataArray.length()];
+            ContentValues[] contentValues = new ContentValues[(dataArray.length() + 1)];
+            ContentValues allValue = new ContentValues();
+            allValue.put(PicloContract.CategoriesEntry.COLUMN_CATEGORY_ID, "0");
+            allValue.put(PicloContract.CategoriesEntry.COLUMN_CATEGORY_NAME, "All");
+            contentValues[0] = allValue;
             for (int i = 0; i < dataArray.length(); i++) {
                 JSONObject dataObject = dataArray.optJSONObject(i);
-                ContentValues values = new ContentValues();
-                values.put(PicloContract.CategoriesEntry.COLUMN_CATEGORY_ID, dataObject.optString(Constants.KEY_JSON_CATEGORY_ID));
-                values.put(PicloContract.CategoriesEntry.COLUMN_CATEGORY_NAME, dataObject.optString(Constants.KEY_JSON_CATEGORY_NAME));
-                contentValues[i] = values;
+                if (dataObject != null) {
+                    ContentValues values = new ContentValues();
+                    values.put(PicloContract.CategoriesEntry.COLUMN_CATEGORY_ID, dataObject.optString(Constants.KEY_JSON_CATEGORY_ID));
+                    values.put(PicloContract.CategoriesEntry.COLUMN_CATEGORY_NAME, dataObject.optString(Constants.KEY_JSON_CATEGORY_NAME));
+                    contentValues[(i + 1)] = values;
+                }
             }
             return contentValues;
         }
