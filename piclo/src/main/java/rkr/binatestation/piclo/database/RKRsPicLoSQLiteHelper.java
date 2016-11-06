@@ -7,13 +7,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import static rkr.binatestation.piclo.database.PicloContract.CategoriesEntry.SQL_CREATE_CATEGORY_TABLE;
 import static rkr.binatestation.piclo.database.PicloContract.PicturesEntry.SQL_CREATE_PICTURES_TABLE;
 
-public class RKRsPicLoSQLiteHelper extends SQLiteOpenHelper {
+class RKRsPicLoSQLiteHelper extends SQLiteOpenHelper {
 
     // The name of our database.
     private static final String DATABASE_NAME = "piclo.db";
-    private static int DB_VERSION = 2;
+    private static int DB_VERSION = 3;
 
-    public RKRsPicLoSQLiteHelper(Context context) {
+    RKRsPicLoSQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DB_VERSION);
     }
 

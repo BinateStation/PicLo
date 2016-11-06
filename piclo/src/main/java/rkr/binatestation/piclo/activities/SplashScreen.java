@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -103,6 +104,15 @@ public class SplashScreen extends AppCompatActivity {
                 Map<String, String> params = new HashMap<>();
                 String date = getSharedPreferences(getPackageName(), Context.MODE_PRIVATE)
                         .getString(Constants.KEY_CATEGORY_LAST_UPDATED_DATE, "");
+                try {
+                    Date savedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(date);
+                    Date changedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse("2016-11-06");
+                    if (changedDate.after(savedDate)) {
+                        date = "";
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 if (!TextUtils.isEmpty(date)) {
                     params.put("date", date);
                 }
