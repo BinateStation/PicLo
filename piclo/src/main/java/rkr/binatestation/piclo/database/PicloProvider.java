@@ -11,6 +11,9 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
+
+import java.util.Arrays;
 
 /**
  * Created by RKR on 30/10/2016.
@@ -18,6 +21,7 @@ import android.support.annotation.NonNull;
  */
 
 public class PicloProvider extends ContentProvider {
+    private static final String TAG = "PicloProvider";
     // These codes are returned from sUriMatcher#match when the respective Uri matches.
     private static final int CATEGORY = 1;
     private static final int CATEGORY_ID = 2;
@@ -56,6 +60,9 @@ public class PicloProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
+        Log.d(TAG, "query() called with: uri = [" + uri + "], projection = [" + Arrays.toString(projection) +
+                "], selection = [" + selection + "], selectionArgs = [" + Arrays.toString(selectionArgs) +
+                "], sortOrder = [" + sortOrder + "]");
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
             case CATEGORY: {

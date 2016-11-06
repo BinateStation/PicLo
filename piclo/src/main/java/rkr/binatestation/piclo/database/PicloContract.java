@@ -12,6 +12,15 @@ import android.provider.BaseColumns;
 
 public final class PicloContract {
 
+    public static final String INTEGER = " INTEGER ";
+    public static final String TEXT = " TEXT ";
+    public static final String PRIMARY_KEY = " PRIMARY KEY ";
+    public static final String AUTOINCREMENT = " AUTOINCREMENT ";
+    public static final String COMMA = " , ";
+    public static final String UNIQUE = " UNIQUE ";
+    public static final String NOT_NULL = " NOT NULL ";
+    public static final String CREATE_TABLE = " CREATE TABLE ";
+
     // The name for the entire content provider.
     public static final String CONTENT_AUTHORITY = "rkr.binatestation.piclo";
 
@@ -40,10 +49,10 @@ public final class PicloContract {
         public static final String COLUMN_CATEGORY_NAME = "category_name";
 
         // Create a table to hold categories.
-        public static final String SQL_CREATE_CATEGORY_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
-                _ID + " INTEGER PRIMARY KEY," +
-                COLUMN_CATEGORY_ID + " TEXT UNIQUE NOT NULL, " +
-                COLUMN_CATEGORY_NAME + " TEXT NOT NULL " +
+        public static final String SQL_CREATE_CATEGORY_TABLE = CREATE_TABLE + TABLE_NAME + " (" +
+                _ID + INTEGER + PRIMARY_KEY + AUTOINCREMENT + COMMA +
+                COLUMN_CATEGORY_ID + INTEGER + UNIQUE + NOT_NULL + COMMA +
+                COLUMN_CATEGORY_NAME + TEXT + NOT_NULL +
                 " );";
 
         // Returns the Uri referencing a category with the specified id.
@@ -56,22 +65,10 @@ public final class PicloContract {
 
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_PICTURES).build();
-
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "." + PATH_PICTURES;
-
-        // Name of the Picture table.
-        public static final String TABLE_NAME = "pictures";
-
         // Title of picture
         public static final String COLUMN_TITLE = "p_title";
-
         // file url of the Picture.
         public static final String COLUMN_FILE = "p_file";
-        // like count of the Picture.
-        public static final String COLUMN_LIKE_COUNT = "p_like_count";
-        // is it liked by the user.
-        public static final String COLUMN_IS_LIKED = "p_is_liked";
         // updated date of the Picture.
         public static final String COLUMN_UPDATED_DATE = "p_updated_date";
         // Image id of the Picture.
@@ -86,25 +83,32 @@ public final class PicloContract {
         public static final String COLUMN_CATEGORY_NAME = "p_category_name";
         // The full name of the Picture.
         public static final String COLUMN_FULL_NAME = "p_full_name";
-
+        static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "." + PATH_PICTURES;
+        // Name of the Picture table.
+        static final String TABLE_NAME = "pictures";
+        // like count of the Picture.
+        static final String COLUMN_LIKE_COUNT = "p_like_count";
+        // is it liked by the user.
+        static final String COLUMN_IS_LIKED = "p_is_liked";
         // Create a table to hold categories.
-        public static final String SQL_CREATE_PICTURES_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
-                _ID + " INTEGER PRIMARY KEY," +
-                COLUMN_TITLE + " TEXT , " +
-                COLUMN_FILE + " TEXT UNIQUE , " +
-                COLUMN_LIKE_COUNT + " TEXT , " +
-                COLUMN_IS_LIKED + " TEXT , " +
-                COLUMN_UPDATED_DATE + " TEXT , " +
-                COLUMN_IMAGE_ID + " TEXT UNIQUE , " +
-                COLUMN_USER_ID + " TEXT , " +
-                COLUMN_CATEGORY_ID + " TEXT , " +
-                COLUMN_COURTESY + " TEXT , " +
-                COLUMN_CATEGORY_NAME + " TEXT , " +
-                COLUMN_FULL_NAME + " TEXT " +
+        static final String SQL_CREATE_PICTURES_TABLE = CREATE_TABLE + TABLE_NAME + " (" +
+                _ID + INTEGER + PRIMARY_KEY + AUTOINCREMENT + COMMA +
+                COLUMN_TITLE + TEXT + COMMA +
+                COLUMN_FILE + TEXT + UNIQUE + COMMA +
+                COLUMN_LIKE_COUNT + TEXT + COMMA +
+                COLUMN_IS_LIKED + TEXT + COMMA +
+                COLUMN_UPDATED_DATE + TEXT + COMMA +
+                COLUMN_IMAGE_ID + TEXT + UNIQUE + COMMA +
+                COLUMN_USER_ID + TEXT + COMMA +
+                COLUMN_CATEGORY_ID + INTEGER + COMMA +
+                COLUMN_COURTESY + TEXT + COMMA +
+                COLUMN_CATEGORY_NAME + TEXT + COMMA +
+                COLUMN_FULL_NAME + TEXT +
                 " );";
 
         // Returns the Uri referencing a Picture with the specified id.
-        public static Uri buildPictureUri(long id) {
+        static Uri buildPictureUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }

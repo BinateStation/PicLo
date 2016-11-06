@@ -26,7 +26,7 @@ public class PictureModel implements Serializable {
     private String categoryName;
     private String fullName;
 
-    public PictureModel(String title, String file, Date updatedDate, String imageId, String userId, String categoryId, String courtesy, String categoryName, String fullName) {
+    private PictureModel(String title, String file, Date updatedDate, String imageId, String userId, String categoryId, String courtesy, String categoryName, String fullName) {
         this.title = title;
         this.file = file;
         this.updatedDate = updatedDate;

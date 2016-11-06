@@ -15,8 +15,8 @@ public final class Constants {
     /**
      * Content loader id
      */
-    public static final int CONTENT_LOADER_CATEGORIES = 1;
-    public static final int CONTENT_LOADER_PICS = 2;
+    public static final int CONTENT_LOADER_CATEGORIES = 1000;
+    public static final int CONTENT_LOADER_USER_PICS = 1001;
 
     /**
      * The Constants that are used in server APIs

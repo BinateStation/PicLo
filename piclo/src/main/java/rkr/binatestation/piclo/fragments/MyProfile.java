@@ -95,8 +95,8 @@ public class MyProfile extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_changePassword) {
             getChildFragmentManager().beginTransaction()
-                    .addToBackStack("Change password")
                     .replace(R.id.FP_contentLayout, ChangePassword.newInstance())
+                    .addToBackStack("Change password")
                     .commit();
             return true;
         }

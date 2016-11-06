@@ -81,7 +81,6 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
             Log.i(TAG, "The progress of the upload with ID " + uploadId + " is: " + progress);
             try {
                 if (mProgressDialog != null && !mProgressDialog.isShowing()) {
-                    showProgressDialog(true, uploadId, "Image Uploading...");
                     mProgressDialog.setProgress(progress);
                 }
             } catch (Exception e) {
@@ -209,7 +208,7 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
             title.setError("Please provide a title..!");
             title.requestFocus();
         } else if (categorySpinner.getSelectedItemPosition() == 0) {
-            Util.showAlert(getContext(), "Alert", "Please select a categorySpinner..!", false);
+            Util.showAlert(getContext(), "Alert", "Please select a category..!", false);
             categorySpinner.requestFocus();
         } else if (TextUtils.isEmpty(courtesy.getText().toString())) {
             courtesy.setError("Please specify the courtesy of this image..!");
@@ -227,7 +226,7 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
         if (categoriesArrayAdapter.getCount() > 0) {
             Category category = categoriesArrayAdapter.getItem(0);
             if (category != null) {
-                category.setCategoryName("Select a categorySpinner..!");
+                category.setCategoryName("Select a category..!");
             }
         }
         categoriesArrayAdapter.notifyDataSetChanged();
@@ -263,7 +262,7 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
                         mProgressDialog.setTitle(title);
                         mProgressDialog.setMessage(message);
                         mProgressDialog.setMax(100);
-                        mProgressDialog.setCancelable(false);
+                        mProgressDialog.setCancelable(true);
                         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         mProgressDialog.show();
                     }
@@ -403,6 +402,11 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.home, menu);
+        if (getSharedPreferences(getPackageName(), MODE_PRIVATE).getBoolean(Constants.KEY_IS_LOGGED_IN, false)) {
+            menu.getItem(0).setTitle("Logout");
+        } else {
+            menu.getItem(0).setTitle("Login");
+        }
         return true;
     }
 
@@ -528,15 +532,15 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
                 request.addParameter("courtesy", courtesy.getText().toString().trim());
                 Category category = categoriesArrayAdapter.getItem(categorySpinner.getSelectedItemPosition());
                 if (category != null) {
-                    request.addParameter("categorySpinner", category.getCategoryId());
+                    request.addParameter("category", "" + category.getCategoryId());
                 }
 
                 //configure the notification
                 request.setNotificationConfig(R.mipmap.ic_launcher,
                         getString(R.string.app_name),
-                        " Profile update in progress ",
-                        " Profile update completed successfully",
-                        "Profile update Intercepted",
+                        " Piclo update in progress ",
+                        " Piclo update completed successfully",
+                        " Piclo update Intercepted",
                         true);
 
                 // if you comment the following line, the system default user-agent will be used

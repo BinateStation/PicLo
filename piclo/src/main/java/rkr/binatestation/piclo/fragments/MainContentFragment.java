@@ -1,6 +1,7 @@
 package rkr.binatestation.piclo.fragments;
 
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -41,8 +42,11 @@ import rkr.binatestation.piclo.network.VolleySingleTon;
 import rkr.binatestation.piclo.utils.AutoFitRecyclerView;
 import rkr.binatestation.piclo.utils.Constants;
 
+import static rkr.binatestation.piclo.database.PicloContract.PicturesEntry.COLUMN_CATEGORY_ID;
+import static rkr.binatestation.piclo.database.PicloContract.PicturesEntry.COLUMN_USER_ID;
+import static rkr.binatestation.piclo.database.PicloContract.PicturesEntry.CONTENT_URI;
 import static rkr.binatestation.piclo.models.PictureModel.getPictureModels;
-import static rkr.binatestation.piclo.utils.Constants.CONTENT_LOADER_PICS;
+import static rkr.binatestation.piclo.utils.Constants.CONTENT_LOADER_USER_PICS;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -56,7 +60,8 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
 
     SwipeRefreshLayout swipeRefreshLayout;
     PictureAdapter pictureAdapter;
-    private String categoryId, parentActivity;
+    private String parentActivity;
+    private int categoryId;
 
     public MainContentFragment() {
         // Required empty public constructor
@@ -70,10 +75,10 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
      * @param parentActivity parent activity which the fragment is called
      * @return A new instance of fragment MainContentFragment.
      */
-    public static MainContentFragment newInstance(String categoryId, String parentActivity) {
+    public static MainContentFragment newInstance(int categoryId, String parentActivity) {
         MainContentFragment fragment = new MainContentFragment();
         Bundle args = new Bundle();
-        args.putString(Constants.KEY_CATEGORY_ID, categoryId);
+        args.putInt(Constants.KEY_CATEGORY_ID, categoryId);
         args.putString(Constants.KEY_PARENT_ACTIVITY, parentActivity);
         fragment.setArguments(args);
         return fragment;
@@ -88,14 +93,13 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
         AutoFitRecyclerView mainContentRecyclerView = (AutoFitRecyclerView) view.findViewById(R.id.FMC_mainContentRecyclerView);
 
         if (getArguments() != null) {
-            categoryId = getArguments().getString(Constants.KEY_CATEGORY_ID);
+            categoryId = getArguments().getInt(Constants.KEY_CATEGORY_ID);
             parentActivity = getArguments().getString(Constants.KEY_PARENT_ACTIVITY);
         }
 
         if (mainContentRecyclerView != null) {
             mainContentRecyclerView.setAdapter(pictureAdapter = new PictureAdapter(MainContentFragment.this));
         }
-        getPictures();
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -104,7 +108,7 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
         });
 
         final FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.FMC_upload);
-        if (categoryId.equals("100")) {
+        if ("P".equalsIgnoreCase(parentActivity)) {
             fab.setVisibility(View.VISIBLE);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -117,23 +121,27 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
         } else {
             fab.setVisibility(View.GONE);
         }
-        initPictureLoad();
+        getPictures();
+
         return view;
     }
 
-
     private void getPictures() {
-        swipeRefreshLayout.setRefreshing(true);
+        initPictureLoad();
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(true);
+        }
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 VolleySingleTon.getDomainUrl() + Constants.GALLERY, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.d(TAG, "Response payload :- " + response);
                 try {
-                    swipeRefreshLayout.setRefreshing(false);
                     parseResponse(new JSONObject(response));
+                    swipeRefreshLayout.setRefreshing(false);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    initPictureLoad();
                 }
             }
 
@@ -144,15 +152,21 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
                         JSONArray dataArray = response.optJSONArray(Constants.KEY_JSON_DATA);
                         if (dataArray != null && dataArray.length() > 0) {
                             saveImagesIntoDB(dataArray);
+                        } else {
+                            initPictureLoad();
                         }
+                    } else {
+                        initPictureLoad();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    initPictureLoad();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                initPictureLoad();
                 try {
                     Log.e(TAG, "Error :- " + error.toString());
                     swipeRefreshLayout.setRefreshing(false);
@@ -164,8 +178,8 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("category", categoryId);
-                if (parentActivity.equals("P")) {
+                params.put("category", "" + categoryId);
+                if ("P".equalsIgnoreCase(parentActivity)) {
                     params.put("userId", getContext().getSharedPreferences(getContext().getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, ""));
                 }
 
@@ -187,23 +201,52 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                getContext().getContentResolver().bulkInsert(
-                        PicloContract.PicturesEntry.CONTENT_URI,
-                        getContentValues(dataArray)
-                );
+                Context context = getContext();
+                if (context != null) {
+                    ContentResolver contentResolver = context.getContentResolver();
+                    if (contentResolver != null) {
+                        contentResolver.bulkInsert(
+                                CONTENT_URI,
+                                getContentValues(dataArray)
+                        );
+                    }
+                }
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
-                initPictureLoad();
+                if (getContext() != null) {
+                    initPictureLoad();
+                }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void initPictureLoad() {
-        getActivity().getSupportLoaderManager().initLoader(CONTENT_LOADER_PICS, null, this);
+        Log.d(TAG, "initPictureLoad() called");
+        if (getActivity() != null && getActivity().getSupportLoaderManager() != null) {
+            LoaderManager loaderManager = getActivity().getSupportLoaderManager();
+            Bundle bundle = new Bundle();
+            bundle.putInt(COLUMN_CATEGORY_ID, categoryId);
+            if ("P".equalsIgnoreCase(parentActivity)) {
+                Loader<Cursor> cursorLoader = loaderManager.getLoader(CONTENT_LOADER_USER_PICS);
+                if (cursorLoader == null) {
+                    loaderManager.initLoader(CONTENT_LOADER_USER_PICS, bundle, this);
+                } else {
+                    loaderManager.restartLoader(CONTENT_LOADER_USER_PICS, bundle, this);
+                }
+            } else {
+                Loader<Cursor> cursorLoader = loaderManager.getLoader(categoryId);
+                if (cursorLoader == null) {
+                    loaderManager.initLoader(categoryId, bundle, this);
+                } else {
+                    loaderManager.restartLoader(categoryId, bundle, this);
+                }
+            }
+
+        }
     }
 
     private ContentValues[] getContentValues(JSONArray dataArray) {
@@ -217,7 +260,7 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
                 values.put(PicloContract.PicturesEntry.COLUMN_UPDATED_DATE, new Date().getTime());
                 values.put(PicloContract.PicturesEntry.COLUMN_IMAGE_ID, dataObject.optString(Constants.KEY_JSON_IMAGE_ID));
                 values.put(PicloContract.PicturesEntry.COLUMN_USER_ID, dataObject.optString(Constants.KEY_JSON_USER_ID));
-                values.put(PicloContract.PicturesEntry.COLUMN_CATEGORY_ID, dataObject.optString(Constants.KEY_JSON_CATEGORY_ID));
+                values.put(COLUMN_CATEGORY_ID, dataObject.optString(Constants.KEY_JSON_CATEGORY_ID));
                 values.put(PicloContract.PicturesEntry.COLUMN_COURTESY, dataObject.optString(Constants.KEY_JSON_COURTESY));
                 values.put(PicloContract.PicturesEntry.COLUMN_CATEGORY_NAME, dataObject.optString(Constants.KEY_JSON_CATEGORY_NAME));
                 values.put(PicloContract.PicturesEntry.COLUMN_FULL_NAME, dataObject.optString(Constants.KEY_JSON_FULL_NAME));
@@ -231,37 +274,56 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        switch (id) {
-            case CONTENT_LOADER_PICS:
-                return new CursorLoader(
-                        getContext(),
-                        PicloContract.PicturesEntry.CONTENT_URI,
-                        null,
-                        null,
-                        null,
-                        null
-                );
+        Log.d(TAG, "onCreateLoader() called with: id = [" + id + "], args = [" + args + "]");
+        if (getContext() != null && args.containsKey(COLUMN_CATEGORY_ID)) {
+            switch (id) {
+                case 0:
+                    return new CursorLoader(
+                            getContext(),
+                            CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            null
+                    );
+                case CONTENT_LOADER_USER_PICS:
+                    return new CursorLoader(
+                            getContext(),
+                            CONTENT_URI,
+                            null,
+                            COLUMN_USER_ID + " = ? ",
+                            new String[]{getContext().getSharedPreferences(getContext().getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, "")},
+                            null
+                    );
+                default:
+                    return new CursorLoader(
+                            getContext(),
+                            CONTENT_URI,
+                            null,
+                            COLUMN_CATEGORY_ID + " = ? ",
+                            new String[]{"" + args.getInt(COLUMN_CATEGORY_ID)},
+                            null
+                    );
+            }
         }
         return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (loader != null) {
-            switch (loader.getId()) {
-                case CONTENT_LOADER_PICS:
-                    setPictureAdapter(getPictureModels(data));
-                    break;
-            }
-        }
+        Log.d(TAG, "onLoadFinished() called with: loader = [" + loader + "], data = [" + data + "]");
+        setPictureAdapter(getPictureModels(data));
     }
+
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d(TAG, "onLoaderReset() called with: loader = [" + loader + "]");
 
     }
 
     private void setPictureAdapter(List<PictureModel> pictureModelList) {
+        Log.d(TAG, "setPictureAdapter() called with: pictureModelList = [" + pictureModelList + "]");
         try {
             if (pictureAdapter != null) {
                 pictureAdapter.setPictureModelList(pictureModelList);

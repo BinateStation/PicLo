@@ -5,18 +5,18 @@ import android.database.Cursor;
 import java.util.ArrayList;
 import java.util.List;
 
-import rkr.binatestation.piclo.database.PicloContract;
+import static rkr.binatestation.piclo.database.PicloContract.CategoriesEntry.COLUMN_CATEGORY_ID;
+import static rkr.binatestation.piclo.database.PicloContract.CategoriesEntry.COLUMN_CATEGORY_NAME;
 
 /**
  * Created by RKR on 08-01-2016.
  * Category.
  */
 public class Category {
-    private Long _id;
-    private String categoryId;
+    private int categoryId;
     private String categoryName;
 
-    public Category(String categoryId, String categoryName) {
+    private Category(int categoryId, String categoryName) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
     }
@@ -25,29 +25,21 @@ public class Category {
         List<Category> categoryList = new ArrayList<>();
         if (data != null && data.moveToFirst()) {
             do {
-                categoryList.add(new Category(
-                        data.getString(data.getColumnIndex(PicloContract.CategoriesEntry.COLUMN_CATEGORY_ID)),
-                        data.getString(data.getColumnIndex(PicloContract.CategoriesEntry.COLUMN_CATEGORY_NAME))
-                ));
+                try {
+                    categoryList.add(new Category(
+                            data.getInt(data.getColumnIndex(COLUMN_CATEGORY_ID)),
+                            data.getString(data.getColumnIndex(COLUMN_CATEGORY_NAME))
+                    ));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } while (data.moveToNext());
         }
         return categoryList;
     }
 
-    public Long get_id() {
-        return _id;
-    }
-
-    public void set_id(Long _id) {
-        this._id = _id;
-    }
-
-    public String getCategoryId() {
+    public int getCategoryId() {
         return categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
     }
 
     public String getCategoryName() {

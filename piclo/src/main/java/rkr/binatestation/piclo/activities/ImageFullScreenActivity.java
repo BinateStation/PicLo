@@ -15,6 +15,9 @@ public class ImageFullScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_full_screen);
         ZoomableImageView imageView = (ZoomableImageView) findViewById(R.id.PI_image);
+        imageView.setDefaultImageResId(R.drawable.ic_piclo_24dp);
+        imageView.setErrorImageResId(R.drawable.ic_piclo_24dp);
+        imageView.setAdjustViewBounds(true);
         imageView.setImageUrl(
                 VolleySingleTon.getDomainUrlForImage() + getIntent().getStringExtra("IMAGE"),
                 VolleySingleTon.getInstance(imageView.getContext()).getImageLoader()

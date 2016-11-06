@@ -86,6 +86,9 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
 
     @Override
     public void onBindViewHolder(final ItemHolder holder, int position) {
+        holder.title.setText(getItem(position).getTitle());
+        holder.courtesy.setText(getItem(position).getCourtesy());
+        holder.uploadedBy.setText(getItem(position).getFullName());
         holder.picture.setDefaultImageResId(R.drawable.ic_piclo_24dp);
         holder.picture.setErrorImageResId(R.drawable.ic_piclo_24dp);
         holder.picture.setAdjustViewBounds(true);
@@ -93,9 +96,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
                 VolleySingleTon.getDomainUrlForImage() + getItem(position).getFile(),
                 VolleySingleTon.getInstance(holder.picture.getContext()).getImageLoader()
         );
-        holder.title.setText(getItem(position).getTitle());
-        holder.courtesy.setText(getItem(position).getCourtesy());
-        holder.uploadedBy.setText(getItem(position).getFullName());
+
         if (holder.like.isChecked()) {
             holder.likeCount.setAlpha(1);
         } else {
@@ -337,7 +338,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
         /**
          * Constructor to initialize the child views of the view holder
          */
-        public ItemHolder(View itemView) {
+        ItemHolder(View itemView) {
             super(itemView);
             view = itemView;
             picture = (NetworkImageView) itemView.findViewById(R.id.PI_image);
