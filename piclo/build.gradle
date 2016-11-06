@@ -14,13 +14,14 @@ android {
         applicationId 'rkr.binatestation.piclo'
         minSdkVersion 15
         targetSdkVersion 24
-        versionCode 5
-        versionName '1.0.3'
+        versionCode 6
+        versionName '1.1.0'
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
     productFlavors {
