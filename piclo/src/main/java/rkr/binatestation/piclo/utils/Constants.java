@@ -63,6 +63,7 @@ public final class Constants {
     public static final String KEY_JSON_USER_ID = "userId";
     public static final String KEY_JSON_COURTESY = "courtesy";
     public static final String KEY_JSON_FULL_NAME = "fullName";
+    public static final String KEY_JSON_DATE = "date";
 
     /**
      ***********************************************************************************************

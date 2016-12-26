@@ -12,51 +12,41 @@ import android.provider.BaseColumns;
 
 public final class PicloContract {
 
-    public static final String INTEGER = " INTEGER ";
-    public static final String TEXT = " TEXT ";
-    public static final String PRIMARY_KEY = " PRIMARY KEY ";
-    public static final String AUTOINCREMENT = " AUTOINCREMENT ";
-    public static final String COMMA = " , ";
-    public static final String UNIQUE = " UNIQUE ";
-    public static final String NOT_NULL = " NOT NULL ";
-    public static final String CREATE_TABLE = " CREATE TABLE ";
-
     // The name for the entire content provider.
-    public static final String CONTENT_AUTHORITY = "rkr.binatestation.piclo";
-
-    // Base of all URIs that will be used to contact the content provider.
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
-
+    static final String CONTENT_AUTHORITY = "rkr.binatestation.piclo";
     // The content paths.
-    public static final String PATH_CATEGORIES = "categories";
-    public static final String PATH_PICTURES = "pictures";
+    static final String PATH_CATEGORIES = "categories";
+    static final String PATH_PICTURES = "pictures";
+    private static final String INTEGER = " INTEGER ";
+    private static final String TEXT = " TEXT ";
+    private static final String PRIMARY_KEY = " PRIMARY KEY ";
+    private static final String AUTOINCREMENT = " AUTOINCREMENT ";
+    private static final String COMMA = " , ";
+    private static final String UNIQUE = " UNIQUE ";
+    private static final String NOT_NULL = " NOT NULL ";
+    private static final String CREATE_TABLE = " CREATE TABLE ";
+    // Base of all URIs that will be used to contact the content provider.
+    private static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     public static final class CategoriesEntry implements BaseColumns {
 
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_CATEGORIES).build();
-
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "." + PATH_CATEGORIES;
-
-        // Name of the category table.
-        public static final String TABLE_NAME = "categories";
-
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CATEGORIES).build();
         // Column with the foreign key into the picture table.
         public static final String COLUMN_CATEGORY_ID = "category_id";
-
         // Name of the category.
         public static final String COLUMN_CATEGORY_NAME = "category_name";
-
+        static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "." + PATH_CATEGORIES;
+        // Name of the category table.
+        static final String TABLE_NAME = "categories";
         // Create a table to hold categories.
-        public static final String SQL_CREATE_CATEGORY_TABLE = CREATE_TABLE + TABLE_NAME + " (" +
+        static final String SQL_CREATE_CATEGORY_TABLE = CREATE_TABLE + TABLE_NAME + " (" +
                 _ID + INTEGER + PRIMARY_KEY + AUTOINCREMENT + COMMA +
                 COLUMN_CATEGORY_ID + INTEGER + UNIQUE + NOT_NULL + COMMA +
                 COLUMN_CATEGORY_NAME + TEXT + NOT_NULL +
                 " );";
 
         // Returns the Uri referencing a category with the specified id.
-        public static Uri buildCategoryUri(long id) {
+        static Uri buildCategoryUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }
@@ -99,8 +89,8 @@ public final class PicloContract {
                 COLUMN_LIKE_COUNT + TEXT + COMMA +
                 COLUMN_IS_LIKED + TEXT + COMMA +
                 COLUMN_UPDATED_DATE + TEXT + COMMA +
-                COLUMN_IMAGE_ID + TEXT + UNIQUE + COMMA +
-                COLUMN_USER_ID + TEXT + COMMA +
+                COLUMN_IMAGE_ID + INTEGER + UNIQUE + COMMA +
+                COLUMN_USER_ID + INTEGER + COMMA +
                 COLUMN_CATEGORY_ID + INTEGER + COMMA +
                 COLUMN_COURTESY + TEXT + COMMA +
                 COLUMN_CATEGORY_NAME + TEXT + COMMA +

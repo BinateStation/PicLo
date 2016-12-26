@@ -34,8 +34,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import rkr.binatestation.piclo.R;
 import rkr.binatestation.piclo.activities.ImageFullScreenActivity;
@@ -86,9 +88,11 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
 
     @Override
     public void onBindViewHolder(final ItemHolder holder, int position) {
-        holder.title.setText(getItem(position).getTitle());
-        holder.courtesy.setText(getItem(position).getCourtesy());
-        holder.uploadedBy.setText(getItem(position).getFullName());
+        PictureModel pictureModel = getItem(position);
+        holder.title.setText(pictureModel.getTitle());
+        holder.courtesy.setText(pictureModel.getCourtesy());
+        holder.uploadedBy.setText(pictureModel.getFullName());
+        holder.updatedDate.setText(new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(pictureModel.getUpdatedDate()));
         holder.picture.setDefaultImageResId(R.drawable.ic_piclo_24dp);
         holder.picture.setErrorImageResId(R.drawable.ic_piclo_24dp);
         holder.picture.setAdjustViewBounds(true);
@@ -153,6 +157,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
                 }
             }
         });
+
     }
 
     private boolean isStoragePermissionGranted() {
@@ -331,7 +336,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
     class ItemHolder extends RecyclerView.ViewHolder {
         View view;
         NetworkImageView picture;
-        TextView title, courtesy, uploadedBy, likeCount;
+        TextView title, courtesy, uploadedBy, likeCount, updatedDate;
         ToggleButton like;
         ImageButton fbShare, whatsAppShare, saveImage;
 
@@ -350,6 +355,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ItemHold
             fbShare = (ImageButton) itemView.findViewById(R.id.PI_fbShare);
             whatsAppShare = (ImageButton) itemView.findViewById(R.id.PI_whatsAppShare);
             saveImage = (ImageButton) itemView.findViewById(R.id.PI_saveImage);
+            updatedDate = (TextView) itemView.findViewById(R.id.PI_updatedDate);
         }
     }
 }

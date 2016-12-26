@@ -28,9 +28,12 @@ import com.android.volley.toolbox.StringRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import rkr.binatestation.piclo.R;
@@ -43,10 +46,12 @@ import rkr.binatestation.piclo.utils.AutoFitRecyclerView;
 import rkr.binatestation.piclo.utils.Constants;
 
 import static rkr.binatestation.piclo.database.PicloContract.PicturesEntry.COLUMN_CATEGORY_ID;
+import static rkr.binatestation.piclo.database.PicloContract.PicturesEntry.COLUMN_IMAGE_ID;
 import static rkr.binatestation.piclo.database.PicloContract.PicturesEntry.COLUMN_USER_ID;
 import static rkr.binatestation.piclo.database.PicloContract.PicturesEntry.CONTENT_URI;
 import static rkr.binatestation.piclo.models.PictureModel.getPictureModels;
 import static rkr.binatestation.piclo.utils.Constants.CONTENT_LOADER_USER_PICS;
+import static rkr.binatestation.piclo.utils.Constants.KEY_JSON_DATE;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -254,10 +259,20 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
             ContentValues[] contentValues = new ContentValues[dataArray.length()];
             for (int i = 0; i < dataArray.length(); i++) {
                 JSONObject dataObject = dataArray.optJSONObject(i);
+                Date updateDate = null;
+                try {
+                    updateDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(dataObject.optString(KEY_JSON_DATE));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 ContentValues values = new ContentValues();
                 values.put(PicloContract.PicturesEntry.COLUMN_TITLE, dataObject.optString(Constants.KEY_JSON_TITLE));
                 values.put(PicloContract.PicturesEntry.COLUMN_FILE, dataObject.optString(Constants.KEY_JSON_FILE));
-                values.put(PicloContract.PicturesEntry.COLUMN_UPDATED_DATE, new Date().getTime());
+                if (updateDate == null) {
+                    values.put(PicloContract.PicturesEntry.COLUMN_UPDATED_DATE, new Date().getTime());
+                } else {
+                    values.put(PicloContract.PicturesEntry.COLUMN_UPDATED_DATE, updateDate.getTime());
+                }
                 values.put(PicloContract.PicturesEntry.COLUMN_IMAGE_ID, dataObject.optString(Constants.KEY_JSON_IMAGE_ID));
                 values.put(PicloContract.PicturesEntry.COLUMN_USER_ID, dataObject.optString(Constants.KEY_JSON_USER_ID));
                 values.put(COLUMN_CATEGORY_ID, dataObject.optString(Constants.KEY_JSON_CATEGORY_ID));
@@ -284,7 +299,7 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
                             null,
                             null,
                             null,
-                            null
+                            COLUMN_IMAGE_ID + " DESC"
                     );
                 case CONTENT_LOADER_USER_PICS:
                     return new CursorLoader(
@@ -293,7 +308,7 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
                             null,
                             COLUMN_USER_ID + " = ? ",
                             new String[]{getContext().getSharedPreferences(getContext().getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, "")},
-                            null
+                            COLUMN_IMAGE_ID + " DESC"
                     );
                 default:
                     return new CursorLoader(
@@ -302,7 +317,7 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
                             null,
                             COLUMN_CATEGORY_ID + " = ? ",
                             new String[]{"" + args.getInt(COLUMN_CATEGORY_ID)},
-                            null
+                            COLUMN_IMAGE_ID + " DESC"
                     );
             }
         }

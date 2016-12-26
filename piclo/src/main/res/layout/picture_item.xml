@@ -7,7 +7,7 @@
     android:layout_margin="5dp"
     card_view:cardCornerRadius="4dp">
 
-    <LinearLayout
+    <android.support.v7.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -72,16 +72,16 @@
             </FrameLayout>
         </RelativeLayout>
 
-        <LinearLayout
+        <android.support.v7.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
             android:orientation="horizontal">
 
-            <LinearLayout
+            <android.support.v7.widget.LinearLayoutCompat
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="2"
                 android:orientation="vertical"
                 android:paddingBottom="5dp"
                 android:paddingEnd="5dp"
@@ -91,66 +91,88 @@
 
                 <TextView
                     android:id="@+id/PI_title"
-                    style="@style/Base.TextAppearance.AppCompat.Title"
+                    style="@style/TextAppearance.AppCompat.Headline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
-                    android:singleLine="true"
-                    android:textStyle="bold" />
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    tools:text="Title" />
 
                 <TextView
                     android:id="@+id/PI_courtesy"
-                    style="@style/Base.TextAppearance.AppCompat.Subhead"
+                    style="@style/TextAppearance.AppCompat.Subhead"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
-                    android:singleLine="true" />
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    tools:text="Courtesy" />
 
                 <TextView
                     android:id="@+id/PI_uploadedBy"
-                    style="@style/Base.TextAppearance.AppCompat.Caption"
+                    style="@style/TextAppearance.AppCompat.Caption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
-                    android:singleLine="true" />
-            </LinearLayout>
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    tools:text="Uploaded by" />
+            </android.support.v7.widget.LinearLayoutCompat>
 
-            <android.support.v7.widget.ButtonBarLayout
-                android:layout_width="wrap_content"
+            <android.support.v7.widget.LinearLayoutCompat
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-                <ImageButton
-                    android:id="@+id/PI_fbShare"
-                    style="?attr/buttonBarButtonStyle"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:contentDescription="@string/share_to_facebook"
-                    android:src="@drawable/ic_facebook_24dp" />
+                <android.support.v7.widget.ButtonBarLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
-                <ImageButton
-                    android:id="@+id/PI_whatsAppShare"
-                    style="?attr/buttonBarButtonStyle"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:contentDescription="@string/share_to_whats_app"
-                    android:src="@drawable/ic_whatsapp_24dp" />
+                    <ImageButton
+                        android:id="@+id/PI_fbShare"
+                        style="?attr/buttonBarButtonStyle"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:contentDescription="@string/share_to_facebook"
+                        android:src="@drawable/ic_facebook_24dp" />
 
-                <ImageButton
-                    android:id="@+id/PI_saveImage"
-                    style="?attr/buttonBarButtonStyle"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:contentDescription="@string/save"
-                    android:src="@drawable/ic_save_black_24dp"
-                    android:tint="@color/colorAccent" />
-            </android.support.v7.widget.ButtonBarLayout>
-        </LinearLayout>
-    </LinearLayout>
+                    <ImageButton
+                        android:id="@+id/PI_whatsAppShare"
+                        style="?attr/buttonBarButtonStyle"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:contentDescription="@string/share_to_whats_app"
+                        android:src="@drawable/ic_whatsapp_24dp" />
+
+                    <ImageButton
+                        android:id="@+id/PI_saveImage"
+                        style="?attr/buttonBarButtonStyle"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:contentDescription="@string/save"
+                        android:src="@drawable/ic_save_black_24dp"
+                        android:tint="@color/colorAccent" />
+                </android.support.v7.widget.ButtonBarLayout>
+
+                <TextView
+                    android:id="@+id/PI_updatedDate"
+                    style="@style/TextAppearance.AppCompat.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    tools:text="24-12-2016" />
+            </android.support.v7.widget.LinearLayoutCompat>
+
+        </android.support.v7.widget.LinearLayoutCompat>
+    </android.support.v7.widget.LinearLayoutCompat>
 </android.support.v7.widget.CardView>
