@@ -250,7 +250,6 @@ public class MainContentFragment extends Fragment implements LoaderManager.Loade
                     loaderManager.restartLoader(categoryId, bundle, this);
                 }
             }
-
         }
     }
 
