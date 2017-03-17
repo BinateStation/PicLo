@@ -9,9 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -41,15 +39,10 @@ import com.alexbbb.uploadservice.MultipartUploadRequest;
 
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
 
 import rkr.binatestation.piclo.R;
@@ -67,7 +60,6 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
     FloatingActionButton upload;
     TextInputEditText chooseFile, title, courtesy;
     Spinner categorySpinner;
-    String selectedImagePath = "";
     Uri uri;
     ImageView uploadPicture;
     Integer REQUEST_CAMERA = 1;
@@ -80,7 +72,7 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
         public void onProgress(String uploadId, int progress) {
             Log.i(TAG, "The progress of the upload with ID " + uploadId + " is: " + progress);
             try {
-                if (mProgressDialog != null && !mProgressDialog.isShowing()) {
+                if (mProgressDialog != null && mProgressDialog.isShowing()) {
                     mProgressDialog.setProgress(progress);
                 }
             } catch (Exception e) {
@@ -90,8 +82,7 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
 
         @Override
         public void onProgress(final String uploadId, final long uploadedBytes, final long totalBytes) {
-            Log.i(TAG, "Upload with ID " + uploadId + " uploaded bytes: " + uploadedBytes
-                    + ", total: " + totalBytes);
+            Log.i(TAG, "Upload with ID " + uploadId + " uploaded bytes: " + uploadedBytes + ", total: " + totalBytes);
         }
 
         @Override
@@ -196,6 +187,29 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
         if (savedInstanceState != null) {
             setImageView((Uri) savedInstanceState.getParcelable("image_uri"));
         }
+        onNewIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if (type.startsWith("image/")) {
+                handleSendImage(intent); // Handle single image being sent
+            }
+        }
+    }
+
+    private void handleSendImage(Intent intent) {
+        Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        if (imageUri != null) {
+            // Update UI to reflect image being shared
+            setImageView(imageUri);
+        }
     }
 
     private void initCategoriesLoader() {
@@ -203,8 +217,34 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
         getSupportLoaderManager().initLoader(CONTENT_LOADER_CATEGORIES, null, this);
     }
 
+    private void alertForLoggingIn() {
+        Log.d(TAG, "alertForLoggingIn() called");
+        try {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Alert")
+                    .setMessage("Need sign in to proceed...!")
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startActivity(new Intent(getBaseContext(), LoginActivity.class));
+                        }
+                    })
+                    .show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void validateInputs() {
-        if (TextUtils.isEmpty(title.getText().toString())) {
+        if (!getSharedPreferences(getPackageName(), MODE_PRIVATE).getBoolean(Constants.KEY_IS_LOGGED_IN, false)) {
+            alertForLoggingIn();
+        } else if (TextUtils.isEmpty(title.getText().toString())) {
             title.setError("Please provide a title..!");
             title.requestFocus();
         } else if (categorySpinner.getSelectedItemPosition() == 0) {
@@ -314,26 +354,12 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
     private void setImageView(Uri result) {
         try {
             uri = result;
-            uploadPicture.setImageBitmap(getThumbnailFromUri(result));
+            uploadPicture.setImageURI(uri);
             File file = new File(result.getPath());
             chooseFile.setText(file.getName());
-            selectedImagePath = Util.getRealPathFromURI(getContext(), result);
-            Log.i(TAG, selectedImagePath);
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private Bitmap getThumbnailFromUri(Uri uri) {
-        try {
-            return MediaStore.Images.Thumbnails.getThumbnail(
-                    getContentResolver(), Util.getOriginIdFromURI(getContext(), uri),
-                    MediaStore.Images.Thumbnails.MINI_KIND,
-                    null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     @Override
@@ -362,31 +388,7 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
                     setImageView(source);
                 } else if (requestCode == SELECT_FILE) {
                     Uri selectedImageUri = data.getData();
-                    selectedImagePath = Util.getRealPathFromURI(getContext(), selectedImageUri);
-                    if (selectedImagePath != null && selectedImagePath.contains("http")) {
-                        // starting new Async Task
-                        downloadFileFromURL(selectedImagePath);
-                    } else if (selectedImageUri.toString().startsWith("content://com.google.android.apps.photos.content")) {
-                        InputStream is = getContentResolver().openInputStream(selectedImageUri);
-                        Bitmap bitmap = BitmapFactory.decodeStream(is);
-                        File destination = new File(Util.getCaptureImagePath(), "IMG_" + System.currentTimeMillis() + ".jpg");
-                        FileOutputStream fo;
-                        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
-                        try {
-                            if (destination.createNewFile()) {
-                                fo = new FileOutputStream(destination);
-                                fo.write(bytes.toByteArray());
-                                fo.close();
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        Uri source = Uri.fromFile(destination);
-                        setImageView(source);
-                    } else {
-                        setImageView(selectedImageUri);
-                    }
+                    setImageView(selectedImageUri);
                 }
             }
         } catch (Exception e) {
@@ -426,139 +428,53 @@ public class UploadPicture extends AppCompatActivity implements LoaderManager.Lo
         return super.onOptionsItemSelected(item);
     }
 
-    private void downloadFileFromURL(String url) {
-        new AsyncTask<String, String, String>() {
-            /**
-             * Before starting background thread
-             * Show Progress Bar Dialog
-             */
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                mProgressDialog = new ProgressDialog(getContext());
-                mProgressDialog.setMessage("Downloading file. Please wait...");
-                mProgressDialog.setIndeterminate(false);
-                mProgressDialog.setMax(100);
-                mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                mProgressDialog.setCancelable(true);
-                mProgressDialog.show();
-
+    private File getFileForUpload() {
+        File file = new File(uri.getPath());
+        if (file.exists() && file.isFile()) {
+            return file;
+        } else {
+            file = new File(Util.getRealPathFromURI(this, uri));
+            if (file.exists() && file.isFile()) {
+                return file;
             }
-
-            /**
-             * Downloading file in background thread
-             */
-            @Override
-            protected String doInBackground(String... f_url) {
-                int count;
-                try {
-                    URL url = new URL(f_url[0]);
-                    URLConnection conection = url.openConnection();
-                    conection.connect();
-                    // this will be useful so that you can show a tipical 0-100% progress bar
-                    int lenghtOfFile = conection.getContentLength();
-
-                    // download the file
-                    InputStream input = new BufferedInputStream(url.openStream(), 8192);
-
-                    // Output stream
-                    OutputStream output = new FileOutputStream(Util.getCaptureImagePath() + "/profile.jpg");
-
-                    byte data[] = new byte[1024];
-
-                    long total = 0;
-
-                    while ((count = input.read(data)) != -1) {
-                        total += count;
-                        // publishing the progress....
-                        // After this onProgressUpdate will be called
-                        publishProgress("" + (int) ((total * 100) / lenghtOfFile));
-
-                        // writing data to file
-                        output.write(data, 0, count);
-                    }
-
-                    // flushing output
-                    output.flush();
-
-                    // closing streams
-                    output.close();
-                    input.close();
-
-                } catch (Exception e) {
-                    Log.e("Error: ", e.getMessage());
-                }
-
-                return null;
-            }
-
-            /**
-             * Updating progress bar
-             */
-            protected void onProgressUpdate(String... progress) {
-                // setting progress percentage
-                mProgressDialog.setProgress(Integer.parseInt(progress[0]));
-            }
-
-            /**
-             * After completing background task
-             * Dismiss the progress dialog
-             **/
-            @Override
-            protected void onPostExecute(String file_url) {
-                // dismiss the dialog after the file was downloaded
-                if (mProgressDialog.isShowing()) {
-                    mProgressDialog.dismiss();
-                }
-                String imagePath = Util.getCaptureImagePath() + "/profile.jpg";
-                File destination = new File(imagePath);
-                if (destination.exists()) {
-                    Uri source = Uri.fromFile(destination);
-                    setImageView(source);
-                }
-            }
-        }.execute(url);
+        }
+        return null;
     }
 
     public void uploadImage(final Context context) {
-        if (selectedImagePath != null) {
-            File file = new File(selectedImagePath);
-            if (file.exists()) {
-                showProgressDialog(true, file.getName(), "Image Uploading...");
-                MultipartUploadRequest request = new MultipartUploadRequest(context, file.getName(), VolleySingleTon.getDomainUrl() + Constants.GALLERY_UPLOAD);
-                request.addFileToUpload(selectedImagePath, "file", file.getName(), ContentType.IMAGE_JPEG);
-                request.addParameter("userId", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, ""));
-                request.addParameter("title", title.getText().toString().trim());
-                request.addParameter("courtesy", courtesy.getText().toString().trim());
-                Category category = categoriesArrayAdapter.getItem(categorySpinner.getSelectedItemPosition());
-                if (category != null) {
-                    request.addParameter("category", "" + category.getCategoryId());
-                }
+        File file = getFileForUpload();
+        if (file != null) {
+            showProgressDialog(true, file.getName(), "Image Uploading...");
+            MultipartUploadRequest request = new MultipartUploadRequest(context, file.getName(), VolleySingleTon.getDomainUrl() + Constants.GALLERY_UPLOAD);
+            request.addFileToUpload(file.getAbsolutePath(), "file", file.getName(), ContentType.IMAGE_JPEG);
+            request.addParameter("userId", getSharedPreferences(getPackageName(), Context.MODE_PRIVATE).getString(Constants.KEY_USER_ID, ""));
+            request.addParameter("title", title.getText().toString().trim());
+            request.addParameter("courtesy", courtesy.getText().toString().trim());
+            Category category = categoriesArrayAdapter.getItem(categorySpinner.getSelectedItemPosition());
+            if (category != null) {
+                request.addParameter("category", "" + category.getCategoryId());
+            }
 
-                //configure the notification
-                request.setNotificationConfig(R.mipmap.ic_launcher,
-                        getString(R.string.app_name),
-                        " Piclo update in progress ",
-                        " Piclo update completed successfully",
-                        " Piclo update Intercepted",
-                        true);
+            //configure the notification
+            request.setNotificationConfig(R.mipmap.ic_launcher,
+                    getString(R.string.app_name),
+                    " Piclo update in progress ",
+                    " Piclo update completed successfully",
+                    " Piclo update Intercepted",
+                    true);
 
-                // if you comment the following line, the system default user-agent will be used
-                request.setCustomUserAgent("UploadServiceDemo/1.0");
+            // if you comment the following line, the system default user-agent will be used
+            request.setCustomUserAgent("UploadServiceDemo/1.0");
 
 
-                // set the maximum number of automatic upload retries on error
-                request.setMaxRetries(2);
+            // set the maximum number of automatic upload retries on error
+            request.setMaxRetries(2);
 
-                try {
-                    Log.i(TAG, "Request :- " + request.toString());
-                    request.startUpload();
-                } catch (Exception exc) {
-                    exc.printStackTrace();
-                }
-            } else {
-                Util.alert(getContext(), "Alert", "File doesn't exits..!", false);
-                showProgressDialog(false, "", "");
+            try {
+                Log.i(TAG, "Request :- " + request.toString());
+                request.startUpload();
+            } catch (Exception exc) {
+                exc.printStackTrace();
             }
         } else {
             Util.alert(getContext(), "Alert", "Please select a file first...!", false);
