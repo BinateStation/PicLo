@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PicLo.iml" filepath="$PROJECT_DIR$/PicLo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/PicLo.iml" filepath="$PROJECT_DIR$/.idea/PicLo.iml" />
+      <module fileurl="file://G:\Android\Projects\TestApps\PicLo\PicLo.iml" filepath="G:\Android\Projects\TestApps\PicLo\PicLo.iml" />
       <module fileurl="file://$PROJECT_DIR$/piclo/piclo.iml" filepath="$PROJECT_DIR$/piclo/piclo.iml" />
+      <module fileurl="file://G:\Android\Projects\TestApps\PicLo\piclo\piclo.iml" filepath="G:\Android\Projects\TestApps\PicLo\piclo\piclo.iml" />
     </modules>
   </component>
 </project>
